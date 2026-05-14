@@ -1,0 +1,32 @@
+name: CI Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential libsqlite3-dev
+
+    - name: Configure CMake
+      # Creamos un directorio de build para las pruebas
+      run: cmake -B build -S src/tests
+
+    - name: Build tests
+      run: cmake --build build --target unit_tests -j$(nproc)
+
+    - name: Run unit tests
+      run: |
+        cd build
+        ./unit_tests --gtest_color=yes

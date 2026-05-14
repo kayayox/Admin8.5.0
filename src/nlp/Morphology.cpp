@@ -117,7 +117,7 @@ namespace morphology {
         "anoche", "entonces", "todavía", "ya", "aún", "incluso", "jamás", "frecuentemente",
         "a menudo", "a veces", "raramente", "recién", "antiguamente", "últimamente", "mientras",
         "deprisa", "lentamente", "fácilmente", "difícilmente", "cuidadosamente", "especialmente",
-        "así", "tal", "cómo", "dónde", "cuándo", "cuánto",
+        "rapidamente", "así", "tal", "cómo", "dónde", "cuándo", "cuánto",
         "mejor", "peor", "regular", "más", "menos", "casi", "aproximadamente", "exactamente",
         "quizá", "quizás", "acaso", "seguramente", "probablemente", "efectivamente",
         "sí", "no", "ciertamente", "cierto", "también", "tampoco", "además", "asimismo"

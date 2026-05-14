@@ -1,6 +1,8 @@
 ```
 # NLPEngine – Natural Language Processing Engine
 
+![CI status](https://github.com/kayayox/Admin8.5.0/actions/workflows/ci.yml/badge.svg)
+
 A modular C++17 engine for tokenization, morphological analysis, part-of-speech tagging, pattern learning, contextual prediction, and dialogue generation. Supports Spanish and English.
 
 ## Features

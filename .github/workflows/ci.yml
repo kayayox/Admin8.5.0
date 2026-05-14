@@ -9,19 +9,17 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install system dependencies
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake build-essential libsqlite3-dev
 
-    - name: Configure CMake
-      # Creamos un directorio de build para las pruebas
-      run: cmake -B build -S src/tests
+    - name: Configure CMake (Release)
+      run: cmake -B build -S src/tests -DCMAKE_BUILD_TYPE=Release
 
     - name: Build tests
       run: cmake --build build --target unit_tests -j$(nproc)
@@ -30,3 +28,29 @@ jobs:
       run: |
         cd build
         ./unit_tests --gtest_color=yes
+
+  valgrind:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies (including Valgrind)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential libsqlite3-dev valgrind
+
+    - name: Configure CMake (Debug for symbols)
+      run: cmake -B build -S src/tests -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build tests
+      run: cmake --build build --target unit_tests -j$(nproc)
+
+    - name: Run Valgrind memory check
+      run: |
+        cd build
+        valgrind --leak-check=full \
+                 --show-leak-kinds=all \
+                 --track-origins=yes \
+                 --error-exitcode=1 \
+                 ./unit_tests --gtest_color=yes

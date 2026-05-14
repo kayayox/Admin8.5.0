@@ -206,16 +206,12 @@ public:
         std::vector<Word> words = createWordVector(sentence);
         if (words.empty()) return {};
         // 2. Classify
-        bool classific = true;
-        for(auto w : words){
-            if(w.getConfidence() < 0.8f)classific = false;
-        }
-        if(!classific)classifier.classifySentence(words);
+        classifier.classifySentence(words);
 
         // 3. Learn contextual and chunk correlations
         learnTextWithContext(*ctxCorr, *patternCorrW, sentence);
-        learnLetterCorrelations(*lttCorr, sentence);
         learnSyllableCorrelations(*sllCorr, sentence);
+        learnLetterCorrelations(*lttCorr, sentence);
         chcCorr->learnFromClassifiedSentence(words);
         std::vector<std::string> chunks = Chunker::chunk(words);
         chcCorr->learnNextChunkDirect(chunks);
@@ -230,17 +226,15 @@ public:
 
         // 5. Learn word relations using the correlator
         std::vector<std::string> wordStrings;
-        for (const auto& w : words) wordStrings.push_back(w.getWord());
+        std::vector<Token> toks = tokenize(sentence);
+        for(auto t : toks)wordStrings.push_back(t.text);
         for (auto& w : words) {
             w.learnRelationsFromCorrelator(*dialogueContext.patternCorr, wordStrings);
             WordRepository::save(w);
         }
 
         // 6. Update internal context (max 15 words)
-        for (const auto& w : words) {
-            contextWords.push_back(w.getWord());
-            if (contextWords.size() > 15) contextWords.pop_front();
-        }
+        contextWords.insert(contextWords.end(), wordStrings.begin(), wordStrings.end());
 
         // 7. Convert to WordInfo for output
         std::vector<WordInfo> result;

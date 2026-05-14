@@ -20,7 +20,6 @@ static void initWordFromToken(Word& word, const Token& token) {
         word.setType(token.type == TokenType::DATE ? WordType::DATE : WordType::NUMERAL);
         word.setConfidence(0.95f);
     }
-    WordRepository::load(token.text,word);
 }
 
 // ============================================================================

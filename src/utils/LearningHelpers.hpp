@@ -54,4 +54,8 @@ void clearInputBuffer();
 /** @brief Trims leading and trailing whitespace from a string. */
 void trimString(std::string& line);
 
+std::string formatTimestamp(uint32_t ts);
+
+std::vector<int> getcomparetime(uint32_t ts);
+
 #endif // ADMIN850_LEARNING_HELPERS_HPP

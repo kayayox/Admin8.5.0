@@ -11,6 +11,11 @@
 #include <cctype>
 #include <iostream>
 #include <limits>
+#include <ctime>
+#include <vector>
+#include <cstdlib>
+#include <cstdio>
+#include <cstdint>
 
 // ============================================================================
 // Internal helper for token -> Word creation
@@ -89,4 +94,32 @@ void trimString(std::string& line) {
         [](unsigned char ch) { return !std::isspace(ch); }));
     line.erase(std::find_if(line.rbegin(), line.rend(),
         [](unsigned char ch) { return !std::isspace(ch); }).base(), line.end());
+}
+
+std::string formatTimestamp(uint32_t ts) {
+    std::time_t t = ts;
+    std::tm tm_buf;
+    localtime_r(&t, &tm_buf);  // POSIX (Linux, macOS)
+    char buffer[20];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm_buf);
+    return std::string(buffer);
+}
+
+std::vector<int> getcomparetime(uint32_t ts) {
+    std::time_t t = static_cast<std::time_t>(ts);
+    std::tm tm_buf;
+
+    // localtime_r es POSIX (thread-safe). En Windows usar localtime_s.
+    localtime_r(&t, &tm_buf);
+
+    // Extraer los campos de fecha/hora
+    int year  = tm_buf.tm_year + 1900;  // años desde 1900
+    int month = tm_buf.tm_mon + 1;      // meses: 0-11 → 1-12
+    int day   = tm_buf.tm_mday;
+    int hour  = tm_buf.tm_hour;
+    int min   = tm_buf.tm_min;
+    int sec   = tm_buf.tm_sec;
+
+    // Devolver vector con los 6 valores
+    return {year, month, day, hour, min, sec};
 }

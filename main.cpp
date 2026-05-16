@@ -8,7 +8,7 @@
 #include "src/api/NLPEngine.hpp"
 #include "src/nlp/Tokenizer.hpp"          // splitIntoSentences
 #include "src/core/Command.hpp"            // detectCommandFromPhrase
-#include "src/utils/StringConversions.hpp"
+#include "src/db/CleanerManager.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -252,7 +252,6 @@ bool learnFromFile(NLPEngine& engine, const std::string& filename) {
     std::cout << tr("total_learned") << count << tr("sentences_learned_from") << filename << "'.\n";
     return true;
 }
-
 // ----------------------------------------------------------------------------
 // Main program
 // ----------------------------------------------------------------------------
@@ -273,7 +272,13 @@ int main() {
     // Set default language (Spanish)
     engine.setLanguage("es");
     currentLang = "es";
-
+    Cleaner cleaner;
+    cleaner.setDatabasePaths(semanticDb, patternDb,"");
+    Config cfg;
+    cfg.minRelevant = 0.05f;     // eliminar correlaciones con peso < 0.05
+    cfg.minFrecuency = 2.0f;     // mantener solo elementos con frecuencia >= 2
+    cfg.maxTimeago = 30 * 24 * 3600; // 30 días
+    cleaner.setConfig(cfg);
     int option = -1;
     do {
         std::cout << "\n" << tr("menu_title") << "\n"
@@ -497,7 +502,7 @@ int main() {
                 std::cout << tr("invalid_option") << "\n";
         }
     } while (option != 0);
-
+    cleaner.cleanAll();
     engine.shutdown();
     return 0;
 }

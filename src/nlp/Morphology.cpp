@@ -112,7 +112,7 @@ namespace morphology {
         "aquí", "allí", "ahí", "cerca", "lejos", "despacio", "rápido", "bien", "mal", "mucho",
         "poco", "nunca", "siempre", "también", "tampoco", "solo", "solamente", "inclusive",
         "adelante", "atrás", "arriba", "abajo", "dentro", "fuera", "encima", "debajo",
-        "enfrente", "detrás", "alrededor", "dondequiera",
+        "enfrente", "detrás", "alrededor", "dondequiera", "rapidamente",
         "antes", "después", "luego", "pronto", "tarde", "temprano", "ayer", "hoy", "mañana",
         "anoche", "entonces", "todavía", "ya", "aún", "incluso", "jamás", "frecuentemente",
         "a menudo", "a veces", "raramente", "recién", "antiguamente", "últimamente", "mientras",

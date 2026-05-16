@@ -87,7 +87,7 @@ namespace morphology {
         "rápido", "rápida", "lento", "lenta", "fuerte", "débil", "duro", "dura", "blando", "blanda",
         "fácil", "difícil", "sencillo", "sencilla", "complicado", "complicada", "posible", "imposible",
         "importante", "necesario", "necesaria", "especial", "diferente", "igual", "común", "raro", "rara",
-        "alegre", "triste", "enojado", "enojada", "cansado", "cansada", "enfermo", "enferma", "sano", "sana",
+        "alegre", "enojado", "enojada", "cansado", "cansada", "enfermo", "enferma", "sano", "sana",
         "valiente", "cobarde", "simpático", "simpática", "antipático", "antipática", "generoso", "generosa", "egoísta",
         "trabajador", "trabajadora", "perezoso", "perezosa", "honesto", "honesta", "mentiroso", "mentirosa",
         "limpio", "limpia", "sucio", "sucia", "ordenado", "ordenada", "desordenado", "desordenada",
@@ -97,7 +97,7 @@ namespace morphology {
         "ser", "ir", "haber", "estar", "tener", "hacer", "poder", "decir", "ver", "dar",
         "saber", "querer", "llegar", "pasar", "deber", "poner", "parecer", "quedar", "creer",
         "venir", "salir", "valer", "caber", "caer", "traer", "oír", "oler",
-        "andar", "conducir", "traducir", "conocer", "reconocer", "agradecer", "ofrecer", "parecer", "pertenecer",
+        "andar", "conducir", "traducir", "conocer", "reconocer", "agradecer", "ofrecer", "pertenecer",
         "nacer", "obedecer", "enriquecer", "envejecer", "oscurecer", "permanecer", "establecer",
         "jugar", "pensar", "entender", "empezar", "comenzar", "perder", "preferir", "sentir",
         "dormir", "morir", "pedir", "servir", "repetir", "seguir", "conseguir", "perseguir",
@@ -117,13 +117,13 @@ namespace morphology {
         "anoche", "entonces", "todavía", "ya", "aún", "incluso", "jamás", "frecuentemente",
         "a menudo", "a veces", "raramente", "recién", "antiguamente", "últimamente", "mientras",
         "deprisa", "lentamente", "fácilmente", "difícilmente", "cuidadosamente", "especialmente",
-        "rapidamente", "así", "tal", "cómo", "dónde", "cuándo", "cuánto",
+        "así", "tal", "cómo", "dónde", "cuándo", "cuánto",
         "mejor", "peor", "regular", "más", "menos", "casi", "aproximadamente", "exactamente",
         "quizá", "quizás", "acaso", "seguramente", "probablemente", "efectivamente",
-        "sí", "no", "ciertamente", "cierto", "también", "tampoco", "además", "asimismo"
+        "sí", "no", "ciertamente", "cierto", "además", "asimismo"
     };
     static const std::vector<std::string> es_demonstratives = {
-        "este", "esta", "estos", "estas", "esto", "estos",
+        "este", "esta", "estos", "estas", "esto",
         "ese", "esa", "esos", "esas", "eso",
         "aquel", "aquella", "aquellos", "aquellas", "aquello"
     };
@@ -154,10 +154,9 @@ namespace morphology {
         "más", "menos", "tanto", "tanta", "tantos", "tantas", "alguno", "alguna",
         "algunos", "algunas", "ningún", "ninguno", "ninguna", "cualquier", "cualquiera",
         "ambos", "ambas", "cada", "sendos", "sendas", "diversos", "diversas", "distintos",
-        "suficiente", "suficientes", "demasiado", "demasiada", "demasiados", "demasiadas",
-        "alguien", "nadie", "algo", "nada", "todo", "toda", "todos", "todas",
-        "cada", "cualquiera", "quienquiera", "uno", "una", "unos", "unas",
-        "numeroso", "numerosa", "numerosos", "numerosas",
+        "suficiente", "suficientes", "alguien", "nadie",
+        "cada", "cualquiera", "quienquiera", "uno", "una",
+        "unos", "unas", "numeroso", "numerosa", "numerosos", "numerosas",
         "escaso", "escasa", "escasos", "escasas", "distintas"
     };
     static const std::vector<std::string> es_prepositions = {
@@ -189,7 +188,7 @@ namespace morphology {
     static const std::vector<std::string> es_interrogatives = {
         "qué", "cuál", "cuáles", "cómo", "cuándo", "dónde", "adónde",
         "por qué", "para qué", "cuánto", "cuánta", "cuántos", "cuántas", "cuán",
-        "quién", "quiénes", "cuánta"
+        "quién", "quiénes"
     };
 
     static const std::vector<std::string> es_nounSuffixes = {

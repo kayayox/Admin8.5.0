@@ -16,7 +16,7 @@
 namespace {
 
 /// Confidence thresholds
-constexpr float kHighConfThreshold   = 0.8f;
+constexpr float kHighConfThreshold   = 0.9f;
 constexpr float kLowConfForReeval    = 0.2f;
 constexpr float kConfMax             = 0.99f;
 constexpr float kConfMin             = 0.10f;
@@ -26,8 +26,8 @@ constexpr float kContextWeight = 0.6f;
 constexpr float kMorphWeight   = 0.4f;
 
 /// Confidence adjustment factors
-constexpr float kCorrectBoostFactor = 0.3f;
-constexpr float kErrorPenaltyFactor = 0.8f;
+constexpr float kCorrectBoostFactor = 0.25f;
+constexpr float kErrorPenaltyFactor = 0.75f;
 
 } // anonymous namespace
 

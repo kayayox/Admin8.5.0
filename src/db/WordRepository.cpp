@@ -12,6 +12,10 @@
 #include <queue>
 #include <unordered_set>
 #include <ctime>
+#include <unordered_map>
+#include <string>
+#include <vector>
+#include <sstream>
 
 /**
  * @brief Retrieves the internal ID of a word, optionally creating a new record.
@@ -312,4 +316,96 @@ std::vector<std::string> WordRepository::getRelatedWordsRecursive(const std::str
         }
     }
     return result;
+}
+
+std::vector<Word> WordRepository::getHighConfidenceWords(float minConfidence, int limit) {
+    sqlite3* db = DatabaseManager::instance().getHandle(dbPath_);
+    if (!db) {
+        std::cerr << "WordRepository::getHighConfidenceWords: database not initialized" << std::endl;
+        return {};
+    }
+
+    // 1. Build SQL query
+    std::string sql =
+        "SELECT id, word, meaning, type, quantity, tense, gender, degree, person, confidence, frequency, last_used "
+        "FROM words WHERE confidence >= ? ";
+    if (limit > 0) {
+        sql += "LIMIT ?";
+    }
+
+    sqlite3_stmt* stmt = nullptr;
+    if (!prepareSqlStatement(db, sql.c_str(), &stmt)) {
+        std::cerr << "WordRepository::getHighConfidenceWords: prepare failed" << std::endl;
+        return {};
+    }
+
+    sqlite3_bind_double(stmt, 1, minConfidence);
+    if (limit > 0) {
+        sqlite3_bind_int(stmt, 2, limit);
+    }
+
+    std::vector<Word> words;
+    std::vector<int> wordIds;
+    std::unordered_map<int, size_t> idToIndex; // id -> position in words vector
+
+    // 2. Fetch main word data
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        const char* wordText = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* meaning = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+
+        Word w;
+        w.setWord(wordText ? wordText : "");
+        w.setMeaning(meaning ? meaning : "");
+        w.setType(static_cast<WordType>(sqlite3_column_int(stmt, 3)));
+        w.setQuantity(static_cast<Quantity>(sqlite3_column_int(stmt, 4)));
+        w.setTense(static_cast<Tense>(sqlite3_column_int(stmt, 5)));
+        w.setGender(static_cast<Gender>(sqlite3_column_int(stmt, 6)));
+        w.setDegree(static_cast<Degree>(sqlite3_column_int(stmt, 7)));
+        w.setPerson(static_cast<Person>(sqlite3_column_int(stmt, 8)));
+        w.setConfidence(static_cast<float>(sqlite3_column_double(stmt, 9)));
+        w.setFrequency(static_cast<uint32_t>(sqlite3_column_int(stmt, 10)));
+        w.setTimestamp(getLastTime(wordText));
+
+        wordIds.push_back(id);
+        idToIndex[id] = words.size();
+        words.push_back(std::move(w));
+    }
+    sqlite3_finalize(stmt);
+
+    if (words.empty()) {
+        return words;
+    }
+
+    // 3. Batch load related words for all retrieved word IDs
+    std::stringstream idsStr;
+    for (size_t i = 0; i < wordIds.size(); ++i) {
+        if (i != 0) idsStr << ",";
+        idsStr << wordIds[i];
+    }
+
+    std::string sqlRels =
+        "SELECT rw.word_id, w2.word, rw.weight "
+        "FROM related_words rw "
+        "JOIN words w2 ON rw.related_word_id = w2.id "
+        "WHERE rw.word_id IN (" + idsStr.str() + ")";
+
+    sqlite3_stmt* stmtRels = nullptr;
+    if (prepareSqlStatement(db, sqlRels.c_str(), &stmtRels)) {
+        while (sqlite3_step(stmtRels) == SQLITE_ROW) {
+            int wordId = sqlite3_column_int(stmtRels, 0);
+            const char* relWord = reinterpret_cast<const char*>(sqlite3_column_text(stmtRels, 1));
+            double weight = sqlite3_column_double(stmtRels, 2);
+
+            auto it = idToIndex.find(wordId);
+            if (it != idToIndex.end() && relWord) {
+                words[it->second].addRelated(std::string(relWord), weight);
+            }
+        }
+        sqlite3_finalize(stmtRels);
+    } else {
+        std::cerr << "WordRepository::getHighConfidenceWords: warning, could not load relations" << std::endl;
+    }
+
+    return words;
 }

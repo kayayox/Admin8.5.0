@@ -51,35 +51,85 @@ void SentenceRepository::initializeTables() {
     }
 }
 
+static int findDuplicateSentenceId(const Sentence& sentence, sqlite3* db) {
+    if (!db) return -1;
+
+    // Obtener el texto completo normalizado de la oración a buscar
+    std::string fullText = sentence.toString();
+    std::transform(fullText.begin(), fullText.end(), fullText.begin(), ::tolower);
+    // Limpiar espacios múltiples
+    fullText = std::regex_replace(fullText, std::regex("\\s+"), " ");
+
+    // Comparar con las oraciones existentes mediante concatenación de bloques
+    const char* sql =
+        "SELECT s.id "
+        "FROM sentences s "
+        "JOIN blocks b ON s.id = b.sentence_id "
+        "GROUP BY s.id "
+        "HAVING GROUP_CONCAT(b.block_text, ' ' ORDER BY b.position) = ?";
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+    sqlite3_bind_text(stmt, 1, fullText.c_str(), -1, SQLITE_STATIC);
+    int dupId = -1;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        dupId = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    return dupId;
+}
+
 void SentenceRepository::save(Sentence& sentence) {
     sqlite3* db = DatabaseManager::instance().getHandle(dbPath_);
     if (!db) return;
 
     int newId = sentence.getId();
 
+    // --- Si es una nueva oración, comprobar duplicados ---
+    if (newId <= 0) {
+        int dupId = findDuplicateSentenceId(sentence, db);
+        if (dupId != -1) {
+            // Ya existe: actualizar frecuencia y timestamp de la existente
+            const char* sqlUpd = "UPDATE sentences SET frequency = frequency + 1, last_used = CURRENT_TIMESTAMP WHERE id = ?";
+            sqlite3_stmt* stmt = nullptr;
+            if (prepareSqlStatement(db, sqlUpd, &stmt)) {
+                sqlite3_bind_int(stmt, 1, dupId);
+                sqlite3_step(stmt);
+                sqlite3_finalize(stmt);
+            }
+            sentence.setId(dupId);
+            sentence.setFrequency(sentence.getFrequency() + 1.0f);
+            sentence.setTimestamp(static_cast<uint32_t>(std::time(nullptr)));
+            return; // No insertar duplicado
+        }
+    }
+
+    // --- Si no es duplicado o es actualización de existente ---
     if (newId > 0) {
-        // Update existing sentence: increment frequency, update last_used
+        // Actualizar oración existente (incrementar frecuencia en 1)
         const char* sqlUpd =
             "UPDATE sentences SET key_word=?, key_type=?, frequency=frequency+?, tense=?, num_blocks=?, last_used=CURRENT_TIMESTAMP WHERE id=?";
         sqlite3_stmt* stmt = nullptr;
         if (!prepareSqlStatement(db, sqlUpd, &stmt)) return;
         sqlite3_bind_text(stmt, 1, sentence.getKey().text.c_str(), -1, SQLITE_STATIC);
         sqlite3_bind_int(stmt, 2, static_cast<int>(sentence.getKey().type));
-        sqlite3_bind_double(stmt, 3, sentence.getFrequency()); // incremento
+        sqlite3_bind_double(stmt, 3, 1.0);   // CORREGIDO: incrementa en 1, no en sentence.getFrequency()
         sqlite3_bind_int(stmt, 4, static_cast<int>(sentence.getTense()));
         sqlite3_bind_int(stmt, 5, sentence.getNumBlocks());
         sqlite3_bind_int(stmt, 6, newId);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
-        // Delete old blocks
+        // Borrar bloques viejos
         const char* sqlDel = "DELETE FROM blocks WHERE sentence_id=?";
         if (!prepareSqlStatement(db, sqlDel, &stmt)) return;
         sqlite3_bind_int(stmt, 1, newId);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
     } else {
-        // Insert new sentence
+        // Insertar nueva oración (sin duplicado)
         const char* sqlIns =
             "INSERT INTO sentences (key_word, key_type, frequency, tense, num_blocks, last_used) VALUES (?,?,?,?,?, CURRENT_TIMESTAMP)";
         sqlite3_stmt* stmt = nullptr;
@@ -99,7 +149,7 @@ void SentenceRepository::save(Sentence& sentence) {
         sentence.setId(newId);
     }
 
-    // Insert blocks
+    // --- Insertar los bloques (común para ambos casos) ---
     const char* sqlBlock = "INSERT INTO blocks (sentence_id, position, block_text, word_type) VALUES (?,?,?,?)";
     sqlite3_stmt* stmt = nullptr;
     if (!prepareSqlStatement(db, sqlBlock, &stmt)) return;
@@ -284,8 +334,9 @@ int SentenceRepository::mergeDuplicateSentences() {
     sqlite3* db = DatabaseManager::instance().getHandle(dbPath_);
     if (!db) return 0;
 
+    // 1. Agrupar oraciones por texto normalizado (bloques concatenados)
     const char* sqlSelect =
-        "SELECT s.id, GROUP_CONCAT(ORDER BY b.position,b.block_text, ' ') as full_text "
+        "SELECT s.id, GROUP_CONCAT(b.block_text, ' ' ORDER BY b.position) as full_text "
         "FROM sentences s "
         "JOIN blocks b ON s.id = b.sentence_id "
         "GROUP BY s.id";
@@ -312,14 +363,28 @@ int SentenceRepository::mergeDuplicateSentences() {
         const auto& ids = pair.second;
         if (ids.size() <= 1) continue;
 
-        int canonicalId = ids[0];
-        for (int id : ids) {
-            if (id < canonicalId) canonicalId = id;
-        }
+        // Elegir el ID más pequeño como canónico (para mantener referencias estables)
+        int canonicalId = *std::min_element(ids.begin(), ids.end());
 
         for (int dupId : ids) {
             if (dupId == canonicalId) continue;
 
+            // 2. Combinar frecuencias y last_used del duplicado hacia el canónico
+            const char* sqlMerge =
+                "UPDATE sentences SET "
+                "frequency = frequency + (SELECT frequency FROM sentences WHERE id = ?), "
+                "last_used = max(last_used, (SELECT last_used FROM sentences WHERE id = ?)) "
+                "WHERE id = ?";
+            sqlite3_stmt* stmtMerge = nullptr;
+            if (sqlite3_prepare_v2(db, sqlMerge, -1, &stmtMerge, nullptr) == SQLITE_OK) {
+                sqlite3_bind_int(stmtMerge, 1, dupId);
+                sqlite3_bind_int(stmtMerge, 2, dupId);
+                sqlite3_bind_int(stmtMerge, 3, canonicalId);
+                sqlite3_step(stmtMerge);
+                sqlite3_finalize(stmtMerge);
+            }
+
+            // 3. Actualizar referencias en dialogs (si la tabla existe)
             const char* sqlUpdPrem = "UPDATE dialogs SET premise_id = ? WHERE premise_id = ?";
             sqlite3_stmt* stmtUp = nullptr;
             if (sqlite3_prepare_v2(db, sqlUpdPrem, -1, &stmtUp, nullptr) == SQLITE_OK) {
@@ -336,6 +401,7 @@ int SentenceRepository::mergeDuplicateSentences() {
                 sqlite3_finalize(stmtUp);
             }
 
+            // 4. Eliminar bloques y la oración duplicada
             const char* sqlDelBlk = "DELETE FROM blocks WHERE sentence_id = ?";
             if (sqlite3_prepare_v2(db, sqlDelBlk, -1, &stmtUp, nullptr) == SQLITE_OK) {
                 sqlite3_bind_int(stmtUp, 1, dupId);

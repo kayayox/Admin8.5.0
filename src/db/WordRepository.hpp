@@ -59,6 +59,14 @@ public:
                                                              int maxDepth = 2,
                                                              int maxTotal = 50);
 
+    /**
+     * @brief Retrieves all words with confidence above a threshold.
+     * @param minConfidence Minimum confidence value (default 0.8).
+     * @param limit Maximum number of words to return, -1 for no limit.
+     * @return Vector of Word objects (fully populated, including relations).
+     */
+    static std::vector<Word> getHighConfidenceWords(float minConfidence = 0.8f, int limit = -1);
+
 private:
     static std::string dbPath_;
     static int getOrCreateWordId(const Word& word); // auxiliary – not implemented in shown code, kept for compatibility

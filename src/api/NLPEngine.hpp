@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 
+class Word;
 // ============================================================================
 // Public data structures
 // ============================================================================
@@ -135,6 +136,13 @@ public:
      * @return WordInfo if found, otherwise empty.
      */
     WordInfo getWordInfo(std::string& word);
+
+    /**
+     * @brief Retrieves stored information about a single class Word.
+     * @param word The class Word to look up.
+     * @return WordInfo.
+     */
+    WordInfo getInfo(Word& word);
 
 private:
     class Impl;

@@ -413,15 +413,16 @@ public:
 
         Pattern p = patternFromSequence(premSent.getTypeSequence());
         float creativity = utils::computeCreativity(premSent, respSent, p);
-        DialogueRepository::saveDialogue(premSent, respSent, p, creativity);
 
         if (positive) {
             for (const auto& block : respSent.getBlocks()) {
                 // Register feedback that the assigned type was correct
+                DialogueRepository::saveDialogue(premSent, respSent, p, creativity);
                 DialogueRepository::registerFeedback(block.text, block.type, block.type, true);
             }
+        }else{
+
         }
-        // On negative feedback we could trigger reprocessing; for now, just log.
     }
 
     // ------------------------------------------------------------------------
@@ -479,6 +480,11 @@ public:
         Word w(word);
         WordRepository::load(word, w);
         return wordToInfo(w);
+    }
+
+    WordInfo getInfo(Word& word) {
+        if (!initialized) return {};
+        return wordToInfo(word);
     }
 
 private:
@@ -549,4 +555,8 @@ void NLPEngine::resetContext() {
 
 WordInfo NLPEngine::getWordInfo(std::string& word) {
     return pImpl->getWordInfo(word);
+}
+
+WordInfo NLPEngine::getInfo(Word& word) {
+    return pImpl->getInfo(word);
 }

@@ -19,7 +19,7 @@ public:
     explicit LetterCorrelator(const std::string& dbPath);
 
     // Learning from a text: splits into letters (including spaces)
-    void learnWithPreviousTwo(const std::string& text);
+    void learnWithPrevious(const std::string& text);
     void learnNextLetterDirect(const std::string& text);
     void learnFromText(const std::string& text);  // alias for learnWithPreviousTwo
 
@@ -28,14 +28,9 @@ public:
                    const std::vector<std::string>& previousLetters,
                    std::vector<std::pair<WordPattern, double>>& outcomes);
 
-    bool queryNextWithOnePrev(const std::string& current,
-                              const std::string& prev,
+    bool GqueryNext(const std::string& word,
                               std::vector<std::pair<WordPattern, double>>& outcomes);
 
-    bool queryNextWithTwoPrev(const std::string& current,
-                              const std::string& prev1,
-                              const std::string& prev2,
-                              std::vector<std::pair<WordPattern, double>>& outcomes);
 
 private:
     std::unique_ptr<PatternCorrelator> corr;  // uses "_letter" suffix

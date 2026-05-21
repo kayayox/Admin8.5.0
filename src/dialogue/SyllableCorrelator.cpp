@@ -90,7 +90,16 @@ void SyllableCorrelator::learnWithPreviousTwo(const std::string& text) {
     for (size_t i = 0; i < syllables.size(); ++i) {
         const std::string& current = syllables[i];
         std::vector<std::string> prevSyllables;
-        if (i >= 2) {
+        if (i >= 4) {
+            prevSyllables.push_back(syllables[i-4]);
+            prevSyllables.push_back(syllables[i-3]);
+            prevSyllables.push_back(syllables[i-2]);
+            prevSyllables.push_back(syllables[i-1]);
+        } else if (i >= 3) {
+            prevSyllables.push_back(syllables[i-3]);
+            prevSyllables.push_back(syllables[i-2]);
+            prevSyllables.push_back(syllables[i-1]);
+        }else if (i >= 2) {
             prevSyllables.push_back(syllables[i-2]);
             prevSyllables.push_back(syllables[i-1]);
         } else if (i == 1) {
@@ -127,15 +136,30 @@ bool SyllableCorrelator::queryNext(const std::string& current,
     return corr->query(current, prevPat, outcomes);
 }
 
-bool SyllableCorrelator::queryNextWithOnePrev(const std::string& current,
-                                              const std::string& prev,
-                                              std::vector<std::pair<WordPattern, double>>& outcomes) {
-    return queryNext(current, {prev}, outcomes);
-}
+bool SyllableCorrelator::GqueryNext(const std::string& Syllables, std::vector<std::pair<WordPattern, double>>& outcomes) {
+    std::vector<std::string> syllables = tokenizeIntoSyllables(Syllables);
 
-bool SyllableCorrelator::queryNextWithTwoPrev(const std::string& current,
-                                              const std::string& prev1,
-                                              const std::string& prev2,
-                                              std::vector<std::pair<WordPattern, double>>& outcomes) {
-    return queryNext(current, {prev2, prev1}, outcomes);
+    const std::string& current = syllables.back();
+    std::vector<std::string> prevSyllables;
+    if (syllables.size() >= 5) {
+        prevSyllables.push_back(syllables[syllables.size()-5]);
+        prevSyllables.push_back(syllables[syllables.size()-4]);
+        prevSyllables.push_back(syllables[syllables.size()-3]);
+        prevSyllables.push_back(syllables[syllables.size()-2]);
+    } else if (syllables.size() >= 4) {
+        prevSyllables.push_back(syllables[syllables.size()-4]);
+        prevSyllables.push_back(syllables[syllables.size()-3]);
+        prevSyllables.push_back(syllables[syllables.size()-2]);
+    }else if (syllables.size() >= 3) {
+        prevSyllables.push_back(syllables[syllables.size()-3]);
+        prevSyllables.push_back(syllables[syllables.size()-2]);
+    }else if (syllables.size() == 2) {
+        prevSyllables.push_back(syllables[syllables.size()-2]);
+    }
+    if (prevSyllables.empty()) {
+        prevSyllables = {"__NO_CONTEXT__"};
+    }
+
+    WordPattern prevPat = makePattern(prevSyllables);
+    return corr->query(current, prevPat, outcomes);
 }

@@ -18,21 +18,15 @@ class ContextualCorrelator {
 public:
     explicit ContextualCorrelator(const std::string& dbPath);
 
-    void learnWithPreviousTwo(const std::string& text);
+    void learnWithPrevious(const std::string& text);
     void learnNextWordDirect(const std::string& text);
 
     bool queryNext(const std::string& current,
                    const std::vector<std::string>& previousWords,
                    std::vector<std::pair<WordPattern, double>>& outcomes);
 
-    bool queryNextWithTwoPrev(const std::string& current,
-                              const std::string& prev1,
-                              const std::string& prev2,
-                              std::vector<std::pair<WordPattern, double>>& outcomes);
-
-    bool queryNextWithOnePrev(const std::string& current,
-                              const std::string& prev,
-                              std::vector<std::pair<WordPattern, double>>& outcomes);
+    bool GqueryNext(const std::string& phrase,
+                   std::vector<std::pair<WordPattern, double>>& outcomes);
 
 private:
     std::unique_ptr<PatternCorrelator> corr;  // uses default suffix ""

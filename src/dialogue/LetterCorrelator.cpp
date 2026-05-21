@@ -20,7 +20,7 @@ WordPattern LetterCorrelator::makePattern(const std::vector<std::string>& letter
     return pat;
 }
 
-void LetterCorrelator::learnWithPreviousTwo(const std::string& text) {
+void LetterCorrelator::learnWithPrevious(const std::string& text) {
     // Convert text into a vector of single-character strings
     std::vector<std::string> letters;
     for (char c : text) {
@@ -31,7 +31,16 @@ void LetterCorrelator::learnWithPreviousTwo(const std::string& text) {
     for (size_t i = 0; i < letters.size(); ++i) {
         const std::string& current = letters[i];
         std::vector<std::string> prevLetters;
-        if (i >= 2) {
+        if (i >= 4) {
+            prevLetters.push_back(letters[i-4]);
+            prevLetters.push_back(letters[i-3]);
+            prevLetters.push_back(letters[i-2]);
+            prevLetters.push_back(letters[i-1]);
+        } else if (i >= 3) {
+            prevLetters.push_back(letters[i-3]);
+            prevLetters.push_back(letters[i-2]);
+            prevLetters.push_back(letters[i-1]);
+        } else if (i >= 2) {
             prevLetters.push_back(letters[i-2]);
             prevLetters.push_back(letters[i-1]);
         } else if (i == 1) {
@@ -62,7 +71,7 @@ void LetterCorrelator::learnNextLetterDirect(const std::string& text) {
 }
 
 void LetterCorrelator::learnFromText(const std::string& text) {
-    learnWithPreviousTwo(text);
+    learnWithPrevious(text);
 }
 
 bool LetterCorrelator::queryNext(const std::string& current,
@@ -72,15 +81,34 @@ bool LetterCorrelator::queryNext(const std::string& current,
     return corr->query(current, prevPat, outcomes);
 }
 
-bool LetterCorrelator::queryNextWithOnePrev(const std::string& current,
-                                            const std::string& prev,
+bool LetterCorrelator::GqueryNext(const std::string& word,
                                             std::vector<std::pair<WordPattern, double>>& outcomes) {
-    return queryNext(current, {prev}, outcomes);
-}
+    std::vector<std::string> letters;
+    for (char c : word) {
+        letters.push_back(std::string(1, c));
+    }
 
-bool LetterCorrelator::queryNextWithTwoPrev(const std::string& current,
-                                            const std::string& prev1,
-                                            const std::string& prev2,
-                                            std::vector<std::pair<WordPattern, double>>& outcomes) {
-    return queryNext(current, {prev2, prev1}, outcomes);
+    const std::string& current = letters.back();
+    std::vector<std::string> prevLetters;
+    if (letters.size() >= 5) {
+        prevLetters.push_back(letters[letters.size()-5]);
+        prevLetters.push_back(letters[letters.size()-4]);
+        prevLetters.push_back(letters[letters.size()-3]);
+        prevLetters.push_back(letters[letters.size()-2]);
+    } else if (letters.size() >= 4) {
+        prevLetters.push_back(letters[letters.size()-4]);
+        prevLetters.push_back(letters[letters.size()-3]);
+        prevLetters.push_back(letters[letters.size()-2]);
+    }else if (letters.size() >= 3) {
+        prevLetters.push_back(letters[letters.size()-3]);
+        prevLetters.push_back(letters[letters.size()-2]);
+    }else if (letters.size() == 2) {
+        prevLetters.push_back(letters[letters.size()-2]);
+    }
+    if (prevLetters.empty()) {
+        prevLetters = {"__NO_CONTEXT__"};
+    }
+
+    WordPattern prevPat = makePattern(prevLetters);
+    return corr->query(current, prevPat, outcomes);
 }

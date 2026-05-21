@@ -54,7 +54,7 @@ std::vector<Word> createWordVector(const std::string& input) {
 }
 
 void learnContextual(ContextualCorrelator& ctx, const std::string& text) {
-    if (!text.empty()) ctx.learnWithPreviousTwo(text);
+    if (!text.empty()) ctx.learnWithPrevious(text);
 }
 
 void learnDirect(ContextualCorrelator& ctx, const std::string& text) {
@@ -64,7 +64,7 @@ void learnDirect(ContextualCorrelator& ctx, const std::string& text) {
 void learnTextWithContext(ContextualCorrelator& ctx, PatternCorrelator& corr, const std::string& text) {
     if (text.empty()) return;
     corr.learnFromText(text, 1);
-    ctx.learnWithPreviousTwo(text);
+    ctx.learnWithPrevious(text);
     ctx.learnNextWordDirect(text);
 }
 
@@ -74,7 +74,7 @@ void learnLetterCorrelations(LetterCorrelator& lttCorr, const std::string& text)
     for( auto t : toks){
         std::string word = t.text;
         word.push_back(' ');
-        lttCorr.learnWithPreviousTwo(word);
+        lttCorr.learnWithPrevious(word);
         lttCorr.learnNextLetterDirect(word);
     }
 }

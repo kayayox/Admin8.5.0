@@ -252,52 +252,14 @@ public:
                 std::vector<std::pair<WordPattern, double>>& outcomes) {
         if (currentContext.empty()) return {};
 
-        // Split context into individual characters (including spaces)
-        std::vector<std::string> letters;
-        for (char c : currentContext) {
-            letters.push_back(std::string(1, c));
-        }
-        bool found = false;
-
-        if (letters.size() >= 2) {
-            // Use two previous letters as context
-            std::string curr = letters.back();
-            std::string prev1 = letters[letters.size()-2];
-            std::string prev2 = (letters.size() >= 3) ? letters[letters.size()-3] : "";
-            if (!prev2.empty())
-                found = lttCorr->queryNextWithTwoPrev(curr, prev1, prev2, outcomes);
-            else
-                found = lttCorr->queryNextWithOnePrev(curr, prev1, outcomes);
-        } else if (letters.size() == 1) {
-            found = lttCorr->queryNext(letters.back(), {"__NO_CONTEXT__"}, outcomes);
-        }
-        return found;
+        return lttCorr->GqueryNext(currentContext, outcomes);;
     }
 
     bool predictNextSyllable(const std::string& currentContext,
                     std::vector<std::pair<WordPattern, double>>& outcomes) {
         if (currentContext.empty()) return {};
 
-        // Tokenize context by spaces (each token is a syllable)
-        std::vector<std::string> syllables;
-        std::stringstream ss(currentContext);
-        std::string token;
-        while (ss >> token) syllables.push_back(token);
-
-        bool found = false;
-
-        if (syllables.size() >= 2) {
-            std::string curr = syllables.back();
-            std::string prev1 = syllables[syllables.size()-2];
-            std::string prev2 = (syllables.size() >= 3) ? syllables[syllables.size()-3] : "";
-            if (!prev2.empty())
-                found = sllCorr->queryNextWithTwoPrev(curr, prev1, prev2, outcomes);
-            else
-                found = sllCorr->queryNextWithOnePrev(curr, prev1, outcomes);
-        } else if (syllables.size() == 1) {
-            found = sllCorr->queryNext(syllables.back(), {"__NO_CONTEXT__"}, outcomes);
-        }
-        return found;
+        return sllCorr->GqueryNext(currentContext, outcomes);
     }
     std::vector<Prediction> predictNext(const std::string& currentWords,bool& type) {
         if (!initialized) return {};
@@ -313,34 +275,14 @@ public:
             words.push_back(wo);
         }
 
-        std::vector<std::string> chunks = Chunker::chunk(words);
         std::vector<std::pair<WordPattern, double>> outcomes;
         bool hasPrediction = false;
 
-        if (chunks.size() >= 3) {
-            hasPrediction = chcCorr->queryNextWithTwoPrev(
-                chunks.back(), chunks[chunks.size()-2], chunks[chunks.size()-3], outcomes);
-        } else if (chunks.size() == 2) {
-            hasPrediction = chcCorr->queryNextWithOnePrev(chunks.back(), chunks[0], outcomes);
-        } else if (chunks.size() == 1) {
-            hasPrediction = chcCorr->queryNext(chunks.back(), {"__NO_CONTEXT__"}, outcomes);
-        }
+        hasPrediction = chcCorr->GqueryNext(words, outcomes);
 
         // Fallback to word-level context
         if (!hasPrediction || outcomes.empty()) {
-            std::string curr;
-            std::vector<std::string> prev;
-            if (wordsCorr.size() > 1) {
-                curr = wordsCorr.back();
-                prev = {wordsCorr[wordsCorr.size()-2]};
-            } else if (wordsCorr.size() == 1) {
-                curr = wordsCorr.back();
-                prev = {"__NO_CONTEXT__"};
-            }
-            if (!curr.empty()) {
-                outcomes.clear();
-                hasPrediction = ctxCorr->queryNext(curr, prev, outcomes);
-            }
+            hasPrediction = ctxCorr->GqueryNext(currentWords, outcomes);
         }
         if ((!hasPrediction || outcomes.empty()) && type == false){
             hasPrediction = predictNextSyllable(currentWords, outcomes);

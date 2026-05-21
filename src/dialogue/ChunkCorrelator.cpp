@@ -7,6 +7,7 @@
 
 #include "ChunkCorrelator.hpp"
 #include "../common/types.hpp"
+#include "../utils/LearningHelpers.hpp"
 
 ChunkCorrelator::ChunkCorrelator(const std::string& dbPath)
     : corr(std::make_unique<PatternCorrelator>(dbPath, "_chunk")) {}
@@ -29,7 +30,7 @@ void ChunkCorrelator::learnWithPreviousTwo(const std::vector<std::string>& chunk
         } else if (i == 1) {
             prevChunks.push_back(chunks[i-1]);
         } else {
-            continue; // no context, skip
+            continue;
         }
 
         WordPattern prevPat = makePattern(prevChunks);
@@ -61,15 +62,36 @@ bool ChunkCorrelator::queryNext(const std::string& current,
     return corr->query(current, prevPat, outcomes);
 }
 
-bool ChunkCorrelator::queryNextWithOnePrev(const std::string& current,
-                                           const std::string& prev,
-                                           std::vector<std::pair<WordPattern, double>>& outcomes) {
-    return queryNext(current, {prev}, outcomes);
+bool ChunkCorrelator::GqueryNext(const std::string& text,
+                                std::vector<std::pair<WordPattern, double>>& outcomes) {
+    std::vector<Word> words = createWordVector(text);
+    std::vector<std::string> chunks = Chunker::chunk(words);
+    const std::string& current = chunks.back();
+    std::vector<std::string> prevChunks;
+    if (chunks.size() >= 3) {
+        prevChunks.push_back(chunks[chunks.size()-3]);
+        prevChunks.push_back(chunks[chunks.size()-2]);
+    } else if (chunks.size() >= 2) {
+        prevChunks.push_back(chunks[chunks.size()-2]);
+    }
+
+    WordPattern prevPat = makePattern(prevChunks);
+    return queryNext(current, prevChunks, outcomes);
 }
 
-bool ChunkCorrelator::queryNextWithTwoPrev(const std::string& current,
-                                           const std::string& prev1,
-                                           const std::string& prev2,
-                                           std::vector<std::pair<WordPattern, double>>& outcomes) {
-    return queryNext(current, {prev2, prev1}, outcomes);
+bool ChunkCorrelator::GqueryNext(const std::vector<Word>& text,
+                                std::vector<std::pair<WordPattern, double>>& outcomes) {
+    std::vector<std::string> chunks = Chunker::chunk(text);
+    if (chunks.empty()) return false;
+    const std::string& current = chunks.back();
+    std::vector<std::string> prevChunks;
+    if (chunks.size() >= 3) {
+        prevChunks.push_back(chunks[chunks.size()-3]);
+        prevChunks.push_back(chunks[chunks.size()-2]);
+    } else if (chunks.size() >= 2) {
+        prevChunks.push_back(chunks[chunks.size()-2]);
+    } else if (chunks.size() == 1) {
+        prevChunks.push_back(chunks[chunks.size()-1]);
+    }
+    return queryNext(current, prevChunks, outcomes);
 }

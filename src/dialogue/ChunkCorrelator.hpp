@@ -27,14 +27,11 @@ public:
                    const std::vector<std::string>& previousChunks,
                    std::vector<std::pair<WordPattern, double>>& outcomes);
 
-    bool queryNextWithOnePrev(const std::string& current,
-                              const std::string& prev,
-                              std::vector<std::pair<WordPattern, double>>& outcomes);
+    bool GqueryNext(const std::string& text,
+                    std::vector<std::pair<WordPattern, double>>& outcomes);
 
-    bool queryNextWithTwoPrev(const std::string& current,
-                              const std::string& prev1,
-                              const std::string& prev2,
-                              std::vector<std::pair<WordPattern, double>>& outcomes);
+    bool GqueryNext(const std::vector<Word>& text,
+                    std::vector<std::pair<WordPattern, double>>& outcomes);
 
 private:
     std::unique_ptr<PatternCorrelator> corr;  // uses "_chunk" suffix

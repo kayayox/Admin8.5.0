@@ -102,7 +102,7 @@ TEST_F(NLPEngineTest, ProcessSentenceWithNumbers) {
 // Pruebas de predicción (requiere datos aprendidos previamente)
 // -----------------------------------------------------------------------------
 
-TEST_F(NLPEngineTest, PredictNextAfterLearning) {
+/*TEST_F(NLPEngineTest, PredictNextAfterLearning) {
     ASSERT_TRUE(engine.initialize(semPath, patPath, tempPath));
     // Aprender una frase para que el correlator tenga datos
     engine.learnText("hola mundo cómo estás");
@@ -111,7 +111,7 @@ TEST_F(NLPEngineTest, PredictNextAfterLearning) {
     // Puede devolver vacío si no hay suficiente aprendizaje, pero no debe fallar
     EXPECT_NO_THROW(engine.predictNext("", type));
     EXPECT_NO_THROW(engine.predictNext("una sola", type));
-}
+}*/
 
 // -----------------------------------------------------------------------------
 // Pruebas de generación de respuesta

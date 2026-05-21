@@ -87,6 +87,7 @@ set(LIB_SOURCES
     src/core/Pattern.cpp
     src/core/Sentence.cpp
     src/core/Word.cpp
+    src/db/CleanerManager.cpp
     src/db/DatabaseManager.cpp
     src/db/DialogueRepository.cpp
     src/db/PatternRepository.cpp

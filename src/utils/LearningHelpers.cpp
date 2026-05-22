@@ -22,8 +22,13 @@
 // ============================================================================
 static void initWordFromToken(Word& word, const Token& token) {
     if (token.type != TokenType::WORD) {
-        word.setType(token.type == TokenType::DATE ? WordType::DATE : WordType::NUMERAL);
-        word.setConfidence(0.95f);
+        switch(token.type){
+            case TokenType::DATE : word.setType(WordType::DATE); word.setConfidence(0.95f); break;
+            case TokenType::EMAIL : word.setType(WordType::EMAIL); word.setConfidence(0.95f); break;
+            case TokenType::MONEY : word.setType(WordType::MONEY); word.setConfidence(0.95f); break;
+            case TokenType::NUMBER : word.setType(WordType::NUMERAL); word.setConfidence(0.95f); break;
+            case TokenType::PHONE : word.setType(WordType::PHONE); word.setConfidence(0.95f); break;
+        }
     }
 }
 

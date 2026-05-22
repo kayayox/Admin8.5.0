@@ -32,6 +32,9 @@ enum class WordType : uint8_t {
     QUANTIFIER,     ///< Quantifier
     DEMONSTRATIVE,  ///< Demonstrative
     DATE,           ///< Date / temporal expression
+    EMAIL,
+    MONEY,
+    PHONE,
     UNDEFINED       ///< Unspecified or unknown type
 };
 
@@ -98,7 +101,10 @@ enum class PatternType : uint8_t {
 enum class TokenType : uint8_t {
     WORD,
     NUMBER,
-    DATE
+    DATE,
+    EMAIL,
+    MONEY,
+    PHONE
 };
 
 // ============================================================================
@@ -109,7 +115,8 @@ enum class TokenType : uint8_t {
 enum class CommandType {
     DO, ANSWER, ASK, TASK, BID, GO, REPORT, MOVE, REPEAT, FIND,
     CREATE, DELETE, UPDATE, SEND, CALL, PLAY, PAUSE, STOP, START,
-    SCHEDULE, SET, SHOW, HELP, OPEN, CLOSE, LEARN
+    SCHEDULE, SET, SHOW, HELP, OPEN, CLOSE, LEARN,
+    EXTRACT, RETRIEVE, QUERY, FETCH
 };
 
 /** @brief Parsing state machine states. */

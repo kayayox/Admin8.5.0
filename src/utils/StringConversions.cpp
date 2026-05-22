@@ -25,6 +25,9 @@ std::string wordTypeToString(WordType type) {
         "Quantifier",       // QUANTIFIER
         "Demonstrative",    // DEMONSTRATIVE
         "Date",             // DATE
+        "Email",
+        "Money",
+        "Phone",
         "Undefined"         // UNDEFINED
     };
     int idx = static_cast<int>(type);

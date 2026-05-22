@@ -111,6 +111,7 @@ set(LIB_SOURCES
     src/utils/SentenceUtils.cpp
     src/utils/SlotFiller.cpp
     src/utils/StringConversions.cpp
+    src/utils/StringUtils.cpp
 )
 
 # Fuentes del ejecutable (main)

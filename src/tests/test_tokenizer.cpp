@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include "../nlp/Tokenizer.hpp"
+#include "../utils/StringUtils.hpp"
 
 // -----------------------------------------------------------------------------
 // Pruebas de tokenización (tokenize)

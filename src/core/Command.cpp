@@ -7,6 +7,11 @@
 
 #include "Command.hpp"
 #include "../db/WordRepository.hpp"
+#include "Word.hpp"
+#include "../utils/LearningHelpers.hpp"
+#include "../utils/StringUtils.hpp"
+#include "../utils/Chunker.hpp"
+#include "Sentence.hpp"
 #include <algorithm>
 #include <cctype>
 #include <optional>
@@ -23,11 +28,18 @@ void setCommandLanguage(const std::string& lang) { currentLang_ = lang; }
 std::string getCommandLanguage() { return currentLang_; }
 
 // ============================================================================
+// Helper: Normalize a verb (lowercase + remove accents)
+// ============================================================================
+static std::string normalizeVerb(const std::string& token) {
+    return StringUtils::toLowerNoAccentsSafe(token);
+}
+
+// ============================================================================
 // Verb lists (Spanish & English)
 // ============================================================================
 namespace {
 
-    // Spanish command verbs (original)
+    // Spanish command verbs
     const std::unordered_map<CommandType, std::vector<std::string>> ES_COMMAND_VERBS = {
         { CommandType::DO,       {"hacer", "haz", "realiza", "ejecuta", "efectúa", "efectua"} },
         { CommandType::ANSWER,   {"responde", "contesta", "di", "contestame"} },
@@ -53,10 +65,15 @@ namespace {
         { CommandType::SHOW,     {"muestra", "enseña", "visualiza", "lista", "despliega"} },
         { CommandType::HELP,     {"ayuda", "asiste", "auxilio", "help"} },
         { CommandType::OPEN,     {"abre", "desbloquea"} },
-        { CommandType::CLOSE,    {"cierra", "clausura"} }
+        { CommandType::CLOSE,    {"cierra", "clausura"} },
+        { CommandType::LEARN,    {"aprende", "estudia", "asimila", "memoriza", "aprehende"} },
+        { CommandType::EXTRACT,  {"extrae", "saca", "obtén", "obten", "recupera", "extraer", "sacar", "recuperar", "retirar", "arrancar", "tomar", "coger", "agarrar"} },
+        { CommandType::RETRIEVE, {"recupera", "rescata", "consigue", "obtén", "obten", "recuperar", "rescatar", "conseguir", "recobrar"} },
+        { CommandType::QUERY,    {"consulta", "interroga", "pregunta", "indaga", "averigua", "investiga", "busca"} },
+        { CommandType::FETCH,    {"trae", "obtén", "obten", "recupera", "busca", "traer", "buscar"} }
     };
 
-    // English command verbs (mirror of Spanish coverage)
+    // English command verbs
     const std::unordered_map<CommandType, std::vector<std::string>> EN_COMMAND_VERBS = {
         { CommandType::DO,       {"do", "make", "execute", "perform", "run"} },
         { CommandType::ANSWER,   {"answer", "reply", "respond", "tell"} },
@@ -82,17 +99,20 @@ namespace {
         { CommandType::SHOW,     {"show", "display", "list", "view", "reveal"} },
         { CommandType::HELP,     {"help", "assist", "support", "aid"} },
         { CommandType::OPEN,     {"open", "unlock"} },
-        { CommandType::CLOSE,    {"close", "shut", "lock"} }
+        { CommandType::CLOSE,    {"close", "shut", "lock"} },
+        { CommandType::LEARN,    {"learn", "study", "memorize", "assimilate"} },
+        { CommandType::EXTRACT,  {"extract", "pull", "retrieve", "obtain", "get", "fetch", "take", "grab"} },
+        { CommandType::RETRIEVE, {"retrieve", "fetch", "get", "obtain", "recover", "regain"} },
+        { CommandType::QUERY,    {"query", "ask", "interrogate", "request", "inquire", "search"} },
+        { CommandType::FETCH,    {"fetch", "retrieve", "get", "bring", "obtain"} }
     };
 
-    // Create a lowercase -> CommandType map for the current language
+    // Create a normalized (lowercase + no accents) -> CommandType map
     std::unordered_map<std::string, CommandType> buildReverseVerbMap(const std::unordered_map<CommandType, std::vector<std::string>>& langMap) {
         std::unordered_map<std::string, CommandType> rev;
         for (const auto& [cmd, verbs] : langMap) {
             for (const auto& v : verbs) {
-                std::string key = v;
-                std::transform(key.begin(), key.end(), key.begin(),
-                               [](unsigned char c) { return std::tolower(c); });
+                std::string key = normalizeVerb(v);
                 rev[key] = cmd;
             }
         }
@@ -165,11 +185,10 @@ std::optional<CommandType> detectCommandFromPhrase(const std::string& phrase) {
                                    [](unsigned char c) { return std::ispunct(c); }),
                     token.end());
         if (token.empty()) continue;
-        // Lowercase
-        std::transform(token.begin(), token.end(), token.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
+        // Normalize: lowercase + remove accents
+        std::string normToken = normalizeVerb(token);
 
-        auto it = reverseMap.find(token);
+        auto it = reverseMap.find(normToken);
         if (it != reverseMap.end()) {
             // Optional: verify that the word is indeed a verb in the database
             Word w;
@@ -240,4 +259,108 @@ std::vector<std::string> detectObjects(const Sentence& sentence) {
             return std::find(subjects.begin(), subjects.end(), obj) != subjects.end();
         }), result.end());
     return result;
+}
+
+// Extrae la frase nominal completa que sigue a un verbo de extracción.
+// Utiliza el chunker para identificar el chunk nominal después del verbo.
+std::string extractNounPhraseAfterVerb(const Sentence& sent, const std::string& commandVerb) {
+    const auto& blocks = sent.getBlocks();
+    if (blocks.empty()) return "";
+
+    // Buscar la posición del verbo (o la primera palabra del comando)
+    size_t verbPos = blocks.size();
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        if (blocks[i].type == WordType::VERB ||
+            StringUtils::toLowerNoAccentsSafe(blocks[i].text) == commandVerb) {
+            verbPos = i;
+            break;
+        }
+    }
+    if (verbPos == blocks.size() - 1 || verbPos >= blocks.size() - 1) return "";
+
+    // Construir vector de palabras desde los bloques restantes
+    std::vector<Word> words;
+    for (size_t i = verbPos + 1; i < blocks.size(); ++i) {
+        Word w(blocks[i].text);
+        w.setType(blocks[i].type);
+        words.push_back(w);
+    }
+    if (words.empty()) return "";
+
+    // Obtener chunks a partir de las palabras
+    std::vector<std::string> chunks = Chunker::chunk(words);
+    if (chunks.empty()) return "";
+
+    // El primer chunk después del verbo suele ser el objeto directo (frase nominal)
+    // Pero puede haber varios chunks (ej. "número de factura" es un solo chunk nominal)
+    // Devolvemos el primer chunk completo.
+    std::string result = chunks[0];
+    // Si el chunk contiene solo un artículo, mirar el siguiente chunk
+    if (result.size() <= 3 && (result == "el" || result == "la" || result == "los" || result == "las" ||
+                                result == "un" || result == "una" || result == "unos" || result == "unas")) {
+        if (chunks.size() > 1) result = chunks[1];
+    }
+    return result;
+}
+
+std::string extractFieldNameFromCommand(const std::string& command, CommandType type) {
+    if (command.empty()) return "";
+
+    // Tokenizar y clasificar la oración
+    std::vector<Word> words = createWordVector(command);
+    Sentence sent(words);
+
+    // Verificar que sea un comando de extracción
+    if (type != CommandType::EXTRACT && type != CommandType::FETCH &&
+        type != CommandType::RETRIEVE && type != CommandType::QUERY) {
+        return "";
+    }
+
+    // Obtener la lista de verbos asociados a este tipo de comando
+    const auto& verbMap = getCurrentVerbMap();
+    auto it = verbMap.find(type);
+    if (it == verbMap.end()) return "";
+    const std::vector<std::string>& possibleVerbs = it->second;
+
+    // Identificar cuál de esos verbos aparece realmente en la frase
+    std::string commandVerb;
+    std::istringstream iss(command);
+    std::string token;
+    while (iss >> token) {
+        // Limpiar puntuación y normalizar
+        token.erase(std::remove_if(token.begin(), token.end(),
+                                   [](unsigned char c) { return std::ispunct(c); }),
+                    token.end());
+        if (token.empty()) continue;
+        std::string normToken = normalizeVerb(token);
+        // Verificar si este token está en la lista de verbos posibles
+        for (const auto& verb : possibleVerbs) {
+            if (normToken == normalizeVerb(verb)) {
+                commandVerb = verb; // guardamos la forma original (normalizada sin acentos)
+                break;
+            }
+        }
+        if (!commandVerb.empty()) break;
+    }
+
+    if (commandVerb.empty()) return "";
+
+    // Extraer la frase nominal después del verbo usando chunking
+    std::string field = extractNounPhraseAfterVerb(sent, commandVerb);
+    if (field.empty()) {
+        // Fallback: intentar con detectObjects (original) pero mejorado
+        auto objects = detectObjects(sent);
+        if (!objects.empty()) {
+            field = objects[0];
+            for (size_t i = 1; i < objects.size(); ++i) field += " " + objects[i];
+        }
+    }
+    if (field.empty()) {
+        // Último recurso: toda la frase sin el primer verbo
+        std::string full = sent.toString();
+        size_t firstSpace = full.find(' ');
+        if (firstSpace != std::string::npos) field = full.substr(firstSpace + 1);
+        else field = full;
+    }
+    return field;
 }

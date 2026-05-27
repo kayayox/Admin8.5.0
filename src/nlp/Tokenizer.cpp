@@ -66,7 +66,7 @@ std::vector<Token> tokenize(const std::string& input) {
         token.type = classifyToken(token.text);
 
         // For word tokens, trim leading/trailing punctuation
-        if (token.type == TokenType::WORD) {
+        if (token.type == TokenType::WORD && !StringUtils::isAbbreviation(token.text)) {
             StringUtils::trimPunctuation(token.text);
         }
 

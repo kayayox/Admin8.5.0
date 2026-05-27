@@ -68,4 +68,11 @@ std::vector<std::string> detectObjects(const std::vector<Word>& words);
 /** @brief Detects objects from a Sentence. */
 std::vector<std::string> detectObjects(const Sentence& sentence);
 
+/**
+ * @brief Dado un comando en lenguaje natural, extrae el "campo" (el resto después del verbo).
+ * @param phrase Frase completa (ej. "extrae número de factura").
+ * @return El campo extraído (ej. "número de factura") o cadena vacía si no se reconoce.
+ */
+std::string extractFieldNameFromCommand(const std::string& phrase, CommandType type);
+
 #endif // ADMIN850_COMMAND_HPP

@@ -22,7 +22,6 @@ namespace morphology {
     // Language state
     // -----------------------------------------------------------------------
     static std::string currentLanguage_ = "es";
-
     void setLanguage(const std::string& lang) { currentLanguage_ = lang; }
     std::string getLanguage() { return currentLanguage_; }
 
@@ -56,6 +55,21 @@ namespace morphology {
     // SPANISH DATA (unchanged logic, only enum names updated)
     // ========================================================================
 
+    // Spanish negation words (lowercase)
+    static const std::vector<std::string> es_negationWords = {
+        "no", "nunca", "jamás", "tampoco", "nadie", "nada", "ninguno", "ninguna",
+        "ningunos", "ningunas", "ningún", "ni", "sino", "ni siquiera", "nada de",
+        "nadie más", "jamás de los jamases", "para nada", "en absoluto", "de ningún modo",
+        "de ninguna manera", "no obstante", "sin embargo", "no solo", "sino también"
+    };
+
+    // Spanish affirmation words (lowercase)
+    static const std::vector<std::string> es_affirmationWords = {
+        "sí", "claro", "ciertamente", "efectivamente", "vale", "ok", "de acuerdo",
+        "afirmativo", "correcto", "exacto", "justo", "así es", "por supuesto",
+        "desde luego", "sin duda", "seguro", "cierto", "verdad", "bueno", "bien",
+        "perfecto", "entendido", "conforme", "ya"
+    };
     static const std::vector<std::string> es_commonNouns = {
         "casa", "perro", "gato", "hombre", "mujer", "niño", "niña", "padre", "madre", "hermano",
         "hermana", "amigo", "amiga", "trabajo", "escuela", "ciudad", "país", "mundo", "vida", "día",
@@ -94,7 +108,7 @@ namespace morphology {
         "abierto", "abierta", "cerrado", "cerrada", "lleno", "llena", "vacío", "vacía"
     };
     static const std::vector<std::string> es_irregularVerbs = {
-        "ser", "ir", "haber", "estar", "tener", "hacer", "poder", "decir", "ver", "dar",
+        "ser", "ir", "haber", "estar", "extrae", "extraer", "tener", "hacer", "poder", "decir", "ver", "dar",
         "saber", "querer", "llegar", "pasar", "deber", "poner", "parecer", "quedar", "creer",
         "venir", "salir", "valer", "caber", "caer", "traer", "oír", "oler",
         "andar", "conducir", "traducir", "conocer", "reconocer", "agradecer", "ofrecer", "pertenecer",
@@ -227,6 +241,22 @@ namespace morphology {
     // ========================================================================
     // ENGLISH DATA (extensive coverage)
     // ========================================================================
+
+    // English negation words (lowercase)
+    static const std::vector<std::string> en_negationWords = {
+        "no", "not", "never", "neither", "nor", "none", "nothing", "nowhere",
+        "nobody", "no one", "nowise", "nay", "nix", "nah", "nope", "non",
+        "cannot", "can't", "won't", "don't", "doesn't", "didn't", "isn't", "aren't",
+        "wasn't", "weren't", "haven't", "hasn't", "hadn't", "couldn't", "shouldn't",
+        "wouldn't", "mightn't", "mustn't", "needn't", "daren't", "shan't"
+    };
+
+    // English affirmation words (lowercase)
+    static const std::vector<std::string> en_affirmationWords = {
+        "yes", "yeah", "yep", "yup", "yea", "sure", "ok", "okay", "alright",
+        "affirmative", "true", "correct", "indeed", "certainly", "definitely",
+        "absolutely", "precisely", "exactly", "right", "roger", "aye", "uh-huh"
+    };
 
     // Common nouns (lowercased)
     static const std::vector<std::string> en_commonNouns = {
@@ -506,7 +536,18 @@ namespace morphology {
             return Degree::POSITIVE;
         }
     }
-
+    bool detectLanguage(const std::string text) {
+        int en = 0;
+        int es = 0;
+        if (containsIgnoreCase(en_articles, text)) en ++;
+        if (containsIgnoreCase(en_prepositions, text)) en ++;
+        if (containsIgnoreCase(en_conjunctions, text)) en ++;
+        if (containsIgnoreCase(es_articles, text)) es ++;
+        if (containsIgnoreCase(es_prepositions, text)) es ++;
+        if (containsIgnoreCase(es_conjunctions, text)) es ++;
+        (es > en) ? setLanguage("es") : setLanguage("en");
+        return (es > en);
+    }
     // ------------------------------------------------------------------------
     // Dictionary lookup
     // ------------------------------------------------------------------------
@@ -519,6 +560,9 @@ namespace morphology {
             if (containsIgnoreCase(en_interrogatives, word))  { outTag = WordType::INTERROGATIVE; outConf = 0.96f; return true; }
             if (containsIgnoreCase(en_pronouns, word))        { outTag = WordType::PRONOUN;       outConf = 0.97f; return true; }
             if (containsIgnoreCase(en_possessives, word))     { outTag = WordType::PRONOUN;       outConf = 0.5f; return true; }
+            // Detect negation words (high confidence)
+            if (containsIgnoreCase(en_negationWords, word))    { outTag = WordType::NEGATION; outConf = 0.99f; return true; }
+            if (containsIgnoreCase(en_affirmationWords, word)) { outTag = WordType::AFIRMATION; outConf = 0.80f; return true; }
             // Open class with high confidence
             if (containsIgnoreCase(en_commonNouns, word))      { outTag = WordType::NOUN;      outConf = 0.95f; return true; }
             if (containsIgnoreCase(en_commonAdjectives, word)) { outTag = WordType::ADJECTIVE; outConf = 0.95f; return true; }
@@ -532,6 +576,8 @@ namespace morphology {
             return false;
         } else {
             // Spanish original
+            if (contains(es_negationWords, word))       { outTag = WordType::NEGATION; outConf = 0.99f; return true; }
+            if (contains(es_affirmationWords, word))    { outTag = WordType::AFIRMATION; outConf = 0.80f; return true; }
             if (contains(es_commonNouns, word))         { outTag = WordType::NOUN; outConf = 0.95f; return true; }
             if (contains(es_commonAdjectives, word))    { outTag = WordType::ADJECTIVE; outConf = 0.95f; return true; }
             if (contains(es_irregularVerbs, word))      { outTag = WordType::VERB; outConf = 0.95f; return true; }

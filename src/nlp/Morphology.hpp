@@ -20,6 +20,7 @@ namespace morphology {
     // --- Language configuration ---
 
     /// Set the current processing language (e.g. "es", "en"). Default is "es".
+    bool detectLanguage(const std::string text);
     void setLanguage(const std::string& lang);
     /// Returns the current language code.
     std::string getLanguage();

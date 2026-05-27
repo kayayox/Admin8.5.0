@@ -1,6 +1,6 @@
 /**
  * @file PatternCorrelator.cpp
- * @brief Implementation of the pattern correlator.
+ * @brief Implementation of the pattern correlator with conditional timestamp for _CellType.
  * @author Soubhi Khayat Najjar
  * @date 2026
  */
@@ -8,35 +8,46 @@
 #include "PatternCorrelator.hpp"
 #include <iostream>
 #include <sstream>
+#include <ctime>
 
 PatternCorrelator::PatternCorrelator(const std::string& dbPath, const std::string& suffix)
-    : tableSuffix(suffix) {
+    : tableSuffix(suffix), previousPatternTimestamp(0) {
     if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK) {
         std::string msg = "Could not open correlator database: ";
         msg += sqlite3_errmsg(db);
         throw std::runtime_error(msg);
     }
 
-    std::string createSQL =
-        "CREATE TABLE IF NOT EXISTS " + getWordsTable() + " ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "word TEXT UNIQUE NOT NULL"
-        ");"
-        "CREATE TABLE IF NOT EXISTS " + getPatternsTable() + " ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "serialized TEXT UNIQUE NOT NULL"
-        ");"
-        "CREATE TABLE IF NOT EXISTS " + getCorrelationsTable() + " ("
-        "current_word_id INTEGER NOT NULL,"
-        "prev_pattern_id INTEGER NOT NULL,"
-        "next_pattern_id INTEGER NOT NULL,"
-        "total_weight REAL NOT NULL,"
-        "count INTEGER NOT NULL,"
-        "PRIMARY KEY (current_word_id, prev_pattern_id, next_pattern_id),"
-        "FOREIGN KEY(current_word_id) REFERENCES " + getWordsTable() + "(id),"
-        "FOREIGN KEY(prev_pattern_id) REFERENCES " + getPatternsTable() + "(id),"
-        "FOREIGN KEY(next_pattern_id) REFERENCES " + getPatternsTable() + "(id)"
-        ");";
+    std::string patternsTableDef = getPatternsTable();
+    std::string patternsSQL = "CREATE TABLE IF NOT EXISTS " + patternsTableDef + " ("
+                              "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                              "serialized TEXT UNIQUE NOT NULL";
+    if (hasTimestampColumn()) {
+        patternsSQL += ", last_used INTEGER NOT NULL DEFAULT (cast(strftime('%s','now') as int))";
+    }
+    patternsSQL += ");";
+
+    std::string correlationsSQL = "CREATE TABLE IF NOT EXISTS " + getCorrelationsTable() + " ("
+                                  "current_word_id INTEGER NOT NULL,"
+                                  "prev_pattern_id INTEGER NOT NULL,"
+                                  "next_pattern_id INTEGER NOT NULL,"
+                                  "total_weight REAL NOT NULL,"
+                                  "count INTEGER NOT NULL,"
+                                  "PRIMARY KEY (current_word_id, prev_pattern_id, next_pattern_id),"
+                                  "FOREIGN KEY(current_word_id) REFERENCES " + getWordsTable() + "(id)";
+    if (hasTimestampColumn()) correlationsSQL += " ON DELETE CASCADE";
+    correlationsSQL += ", FOREIGN KEY(prev_pattern_id) REFERENCES " + patternsTableDef + "(id)";
+    if (hasTimestampColumn()) correlationsSQL += " ON DELETE CASCADE";
+    correlationsSQL += ", FOREIGN KEY(next_pattern_id) REFERENCES " + patternsTableDef + "(id)";
+    if (hasTimestampColumn()) correlationsSQL += " ON DELETE CASCADE";
+    correlationsSQL += ");";
+
+    std::string createSQL = "CREATE TABLE IF NOT EXISTS " + getWordsTable() + " ("
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            "word TEXT UNIQUE NOT NULL"
+                            ");" +
+                            patternsSQL +
+                            correlationsSQL;
 
     char* errMsg = nullptr;
     if (sqlite3_exec(db, createSQL.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
@@ -57,6 +68,7 @@ PatternCorrelator::~PatternCorrelator() {
     if (stmtInsertCorrelation) sqlite3_finalize(stmtInsertCorrelation);
     if (stmtGetTotalWeight) sqlite3_finalize(stmtGetTotalWeight);
     if (stmtGetNextPatterns) sqlite3_finalize(stmtGetNextPatterns);
+    if (stmtUpdatePatternTimestamp) sqlite3_finalize(stmtUpdatePatternTimestamp);
     if (db) sqlite3_close(db);
 }
 
@@ -69,7 +81,12 @@ void PatternCorrelator::prepareStatements() {
     sql = "INSERT INTO " + getWordsTable() + " (word) VALUES (?)";
     sqlite3_prepare_v2(db, sql.c_str(), -1, &stmtInsertWord, nullptr);
 
-    sql = "SELECT id FROM " + getPatternsTable() + " WHERE serialized = ?";
+    // Consulta de patrón: si tiene timestamp, seleccionamos también last_used
+    if (hasTimestampColumn()) {
+        sql = "SELECT id, last_used FROM " + getPatternsTable() + " WHERE serialized = ?";
+    } else {
+        sql = "SELECT id FROM " + getPatternsTable() + " WHERE serialized = ?";
+    }
     sqlite3_prepare_v2(db, sql.c_str(), -1, &stmtGetPatternId, nullptr);
 
     sql = "INSERT INTO " + getPatternsTable() + " (serialized) VALUES (?)";
@@ -94,6 +111,80 @@ void PatternCorrelator::prepareStatements() {
     sql = "SELECT next_pattern_id, total_weight FROM " + getCorrelationsTable() +
           " WHERE current_word_id=? AND prev_pattern_id=?";
     sqlite3_prepare_v2(db, sql.c_str(), -1, &stmtGetNextPatterns, nullptr);
+
+    if (hasTimestampColumn()) {
+        sql = "UPDATE " + getPatternsTable() + " SET last_used = ? WHERE id = ?";
+        sqlite3_prepare_v2(db, sql.c_str(), -1, &stmtUpdatePatternTimestamp, nullptr);
+    }
+}
+
+int PatternCorrelator::getPatternId(const WordPattern& pattern) {
+    std::string serialized = serializePattern(pattern);
+    auto it = patternSerializedToId.find(serialized);
+    if (it != patternSerializedToId.end()) {
+        int id = it->second;
+        if (hasTimestampColumn()) {
+            // Obtener timestamp actual antes de actualizar
+            std::string selectSql = "SELECT last_used FROM " + getPatternsTable() + " WHERE id = ?";
+            sqlite3_stmt* selectStmt = nullptr;
+            if (sqlite3_prepare_v2(db, selectSql.c_str(), -1, &selectStmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_int(selectStmt, 1, id);
+                if (sqlite3_step(selectStmt) == SQLITE_ROW) {
+                    previousPatternTimestamp = sqlite3_column_int64(selectStmt, 0);
+                } else {
+                    previousPatternTimestamp = 0;
+                }
+                sqlite3_finalize(selectStmt);
+            }
+            // Actualizar timestamp
+            sqlite3_bind_int64(stmtUpdatePatternTimestamp, 1, time(nullptr));
+            sqlite3_bind_int(stmtUpdatePatternTimestamp, 2, id);
+            sqlite3_step(stmtUpdatePatternTimestamp);
+            sqlite3_reset(stmtUpdatePatternTimestamp);
+        }
+        return id;
+    }
+
+    sqlite3_bind_text(stmtGetPatternId, 1, serialized.c_str(), -1, SQLITE_STATIC);
+    if (sqlite3_step(stmtGetPatternId) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmtGetPatternId, 0);
+        if (hasTimestampColumn()) {
+            previousPatternTimestamp = sqlite3_column_int64(stmtGetPatternId, 1);
+        } else {
+            previousPatternTimestamp = 0;
+        }
+        sqlite3_reset(stmtGetPatternId);
+        patternSerializedToId[serialized] = id;
+        idToPattern[id] = pattern;
+        if (hasTimestampColumn()) {
+            sqlite3_bind_int64(stmtUpdatePatternTimestamp, 1, time(nullptr));
+            sqlite3_bind_int(stmtUpdatePatternTimestamp, 2, id);
+            sqlite3_step(stmtUpdatePatternTimestamp);
+            sqlite3_reset(stmtUpdatePatternTimestamp);
+        }
+        return id;
+    }
+    sqlite3_reset(stmtGetPatternId);
+
+    sqlite3_bind_text(stmtInsertPattern, 1, serialized.c_str(), -1, SQLITE_STATIC);
+    if (sqlite3_step(stmtInsertPattern) != SQLITE_DONE) {
+        std::cerr << "Error inserting pattern: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_reset(stmtInsertPattern);
+        return -1;
+    }
+    int newId = static_cast<int>(sqlite3_last_insert_rowid(db));
+    sqlite3_reset(stmtInsertPattern);
+    patternSerializedToId[serialized] = newId;
+    idToPattern[newId] = pattern;
+    previousPatternTimestamp = 0;
+
+    if (hasTimestampColumn()) {
+        sqlite3_bind_int64(stmtUpdatePatternTimestamp, 1, time(nullptr));
+        sqlite3_bind_int(stmtUpdatePatternTimestamp, 2, newId);
+        sqlite3_step(stmtUpdatePatternTimestamp);
+        sqlite3_reset(stmtUpdatePatternTimestamp);
+    }
+    return newId;
 }
 
 int PatternCorrelator::getWordId(const std::string& word) {
@@ -120,34 +211,6 @@ int PatternCorrelator::getWordId(const std::string& word) {
     sqlite3_reset(stmtInsertWord);
     wordToId[word] = newId;
     idToWord[newId] = word;
-    return newId;
-}
-
-int PatternCorrelator::getPatternId(const WordPattern& pattern) {
-    std::string serialized = serializePattern(pattern);
-    auto it = patternSerializedToId.find(serialized);
-    if (it != patternSerializedToId.end()) return it->second;
-
-    sqlite3_bind_text(stmtGetPatternId, 1, serialized.c_str(), -1, SQLITE_STATIC);
-    if (sqlite3_step(stmtGetPatternId) == SQLITE_ROW) {
-        int id = sqlite3_column_int(stmtGetPatternId, 0);
-        sqlite3_reset(stmtGetPatternId);
-        patternSerializedToId[serialized] = id;
-        idToPattern[id] = pattern;
-        return id;
-    }
-    sqlite3_reset(stmtGetPatternId);
-
-    sqlite3_bind_text(stmtInsertPattern, 1, serialized.c_str(), -1, SQLITE_STATIC);
-    if (sqlite3_step(stmtInsertPattern) != SQLITE_DONE) {
-        std::cerr << "Error inserting pattern: " << sqlite3_errmsg(db) << std::endl;
-        sqlite3_reset(stmtInsertPattern);
-        return -1;
-    }
-    int newId = static_cast<int>(sqlite3_last_insert_rowid(db));
-    sqlite3_reset(stmtInsertPattern);
-    patternSerializedToId[serialized] = newId;
-    idToPattern[newId] = pattern;
     return newId;
 }
 
@@ -247,7 +310,6 @@ void PatternCorrelator::learnFromText(const std::string& text, size_t windowSize
     std::stringstream ss(text);
     std::string w;
     while (ss >> w) words.push_back(w);
-
     for (size_t i = 0; i + 2 < words.size(); ++i) {
         WordPattern prevPat = {{words[i], 1.0f}};
         WordPattern nextPat = {{words[i+2], 1.0f}};
@@ -264,5 +326,23 @@ void PatternCorrelator::purgeLowWeightCorrelations(double minWeight) {
     }
     sqlite3_bind_double(stmt, 1, minWeight);
     sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+}
+
+void PatternCorrelator::cleanOldPatterns(int daysOld) {
+    if (!hasTimestampColumn()) return;
+    time_t now = time(nullptr);
+    int64_t cutoff = static_cast<int64_t>(now) - (static_cast<int64_t>(daysOld) * 86400);
+    std::string sql = "DELETE FROM " + getPatternsTable() + " WHERE last_used < ?";
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Error preparing cleanOldPatterns: " << sqlite3_errmsg(db) << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        return;
+    }
+    sqlite3_bind_int64(stmt, 1, cutoff);
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        std::cerr << "Error cleaning old patterns: " << sqlite3_errmsg(db) << std::endl;
+    }
     sqlite3_finalize(stmt);
 }

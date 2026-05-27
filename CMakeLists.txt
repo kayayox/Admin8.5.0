@@ -104,6 +104,11 @@ set(LIB_SOURCES
     src/nlp/Refiner.cpp
     src/nlp/TagStats.cpp
     src/nlp/Tokenizer.cpp
+    src/extractor/DocumentExtractor.cpp
+    src/extractor/KeyValueExtractor.cpp
+    src/extractor/OutputFormatter.cpp
+    src/extractor/PDFImageExtractor.cpp
+    src/extractor/SentenceExtractor.cpp
     src/utils/Chunker.cpp
     src/utils/LearningHelpers.cpp
     src/utils/PatternUtils.cpp

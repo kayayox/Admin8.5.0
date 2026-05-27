@@ -81,6 +81,7 @@ endif()
 # Fuentes comunes de la biblioteca (todo excepto main.cpp)
 set(LIB_SOURCES
     src/api/NLPEngine.cpp
+    src/api/ExtractorEngine.cpp
     src/core/Command.cpp
     src/core/Dialogue.cpp
     src/core/InferenceEngine.cpp

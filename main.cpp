@@ -9,6 +9,8 @@
 #include "src/nlp/Tokenizer.hpp"          // splitIntoSentences
 #include "src/core/Command.hpp"            // detectCommandFromPhrase
 #include "src/db/CleanerManager.hpp"
+#include "src/nlp/Morphology.hpp"
+#include "src/api/ExtractorEngine.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -33,7 +35,6 @@ static std::string tr(const std::string& key) {
             {"yes_no", "(y/n)"},
             {"yes", "y"},
             {"no", "n"},
-            // Menu
             {"menu_title", "=== MAIN MENU ==="},
             {"opt_learn_file", "1. Learn from file"},
             {"opt_learn_phrase", "2. Learn a phrase"},
@@ -44,8 +45,8 @@ static std::string tr(const std::string& key) {
             {"opt_predict_loop", "7. Interactive prediction loop"},
             {"opt_generate", "8. Generate response to a premise"},
             {"opt_switch_lang", "9. Switch language (currently: "},
+            {"extractor", "10. Extractor of specific type: "},
             {"opt_exit", "0. Exit"},
-            // Common messages
             {"enter_option", "Option: "},
             {"invalid_option", "Invalid option."},
             {"exiting", "Exiting..."},
@@ -119,6 +120,7 @@ static std::string tr(const std::string& key) {
             {"opt_predict_loop", "7. Predicción interactiva (bucle)"},
             {"opt_generate", "8. Generar respuesta a una premisa"},
             {"opt_switch_lang", "9. Cambiar idioma (actualmente: "},
+            {"extractor", "10. Extractor de tipos especificos: "},
             {"opt_exit", "0. Salir"},
             {"enter_option", "Opción: "},
             {"invalid_option", "Opción no válida."},
@@ -291,6 +293,7 @@ int main() {
                   << tr("opt_predict_loop") << "\n"
                   << tr("opt_generate") << "\n"
                   << tr("opt_switch_lang") << currentLang << ")\n"
+                  << tr("extractor") << "\n"
                   << tr("opt_exit") << "\n"
                   << tr("enter_option");
         std::cin >> option;
@@ -420,18 +423,6 @@ int main() {
                     }
                     WordInfo info = engine.getWordInfo(predicted);
                     printWordInfo(info);
-
-                    // Optional correction of classification
-                    /*if (info.confidence < 0.85f && askYesNo((currentLang == "en" ? "Correct classification of this word?" : "¿Corregir la clasificación de esta palabra?"))) {
-                        std::cout << (currentLang == "en" ? "New type: " : "Nuevo tipo: ");
-                        std::string newType;
-                        std::getline(std::cin, newType);
-                        engine.correctWord(predicted, newType);
-                        engine.reprocessLastSentence();
-                        WordInfo info2 = engine.getWordInfo(predicted);
-                        std::cout << (currentLang == "en" ? "After correction:\n" : "Después de corrección:\n");
-                        printWordInfo(info2);
-                    }*/
                 }
                 std::cout << "\n" << tr("final_generated") << currentPhrase << "\n";
                 break;
@@ -445,6 +436,13 @@ int main() {
                     // First, generate a hypothesis by extending the premise (like prediction loop)
                     for (int iter = 1; iter <= MAX_ITER; ++iter) {
                         bool type = false;
+                        if(!morphology::detectLanguage(currentPhrase)) {
+                            engine.setLanguage("en");
+                            currentLang = "en";
+                        }else{
+                            engine.setLanguage("es");
+                            currentLang = "es";
+                        }
                         auto preds = engine.predictNext(currentPhrase, type);
                         if (preds.empty()) break;
                         std::string predicted = preds[0].word;
@@ -493,6 +491,10 @@ int main() {
                 } else {
                     std::cout << tr("invalid_lang") << "\n";
                 }
+                break;
+            }
+            case 10: {
+                extractor(semanticDb, patternDb, currentLang);
                 break;
             }
             case 0:

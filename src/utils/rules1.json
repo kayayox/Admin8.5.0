@@ -1,0 +1,184 @@
+{
+  "specifications": [
+    {
+      "fieldName": "Fecha de vencimiento",
+      "keywords": ["fecha", "vencimiento", "vence", "caduca", "expira", "pagar antes de", "due date"],
+      "useSynonyms": true,
+      "role": "TIME",
+      "expectedType": "DATE",
+      "required": true,
+      "contextTrigger": "vencimiento",
+      "multiple": false
+    },
+    {
+      "fieldName": "número de factura",
+      "keywords": ["factura", "número", "num", "nro", "identificador", "folio", "invoice", "id"],
+      "useSynonyms": true,
+      "role": "OBJECT",
+      "expectedType": "TEXT",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": false
+    },
+    {
+      "fieldName": "monto total",
+      "keywords": ["total", "monto", "suma", "importe", "precio final", "saldo", "total a pagar"],
+      "useSynonyms": true,
+      "role": "AMOUNT",
+      "expectedType": "MONEY",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": false
+    },
+    {
+      "fieldName": "productos",
+      "keywords": ["producto", "artículo", "ítem", "descripción", "concepto", "detalle", "mercancía"],
+      "useSynonyms": true,
+      "role": "OBJECT",
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": true
+    },
+    {
+      "fieldName": "cantidades",
+      "keywords": ["cantidad", "unidades", "uds", "piezas", "volumen", "número de artículos"],
+      "useSynonyms": true,
+      "role": "AMOUNT",
+      "expectedType": "NUMBER",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": true
+    },
+    {
+      "fieldName": "precios unitarios",
+      "keywords": ["precio", "unitario", "c/u", "costo", "valor unitario", "precio por unidad"],
+      "useSynonyms": true,
+      "role": "AMOUNT",
+      "expectedType": "MONEY",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": true
+    },
+    {
+      "fieldName": "correo electrónico",
+      "keywords": ["email", "correo", "electronico", "mail", "e-mail", "dirección de correo"],
+      "useSynonyms": true,
+      "role": "OBJECT",
+      "expectedType": "EMAIL",
+      "required": true,
+      "contextTrigger": "contacto",
+      "multiple": true
+    },
+    {
+      "fieldName": "teléfono",
+      "keywords": ["teléfono", "tel", "móvil", "celular", "contacto", "fijo", "número de teléfono"],
+      "useSynonyms": true,
+      "role": "AMOUNT",
+      "expectedType": "PHONE",
+      "required": false,
+      "contextTrigger": "contacto",
+      "multiple": true
+    },
+    {
+      "fieldName": "fecha de emisión",
+      "keywords": ["emisión", "fecha de emisión", "fecha documento", "fecha factura", "fecha de creación"],
+      "useSynonyms": true,
+      "role": "TIME",
+      "expectedType": "DATE",
+      "required": false,
+      "contextTrigger": "emisión",
+      "multiple": false
+    },
+    {
+      "fieldName": "proveedor",
+      "keywords": ["proveedor", "vendedor", "empresa", "comercial", "razón social", "emisor", "suministrador"],
+      "useSynonyms": true,
+      "role": "SUBJECT",
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": false
+    },
+    {
+      "fieldName": "cliente",
+      "keywords": ["cliente", "comprador", "adquiriente", "nombre y apellido", "destinatario", "receptor"],
+      "useSynonyms": true,
+      "role": "OBJECT",
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": false
+    },
+    {
+      "fieldName": "dirección",
+      "keywords": ["dirección", "domicilio", "calle", "avenida", "ubicación", "lugar", "sucursal"],
+      "useSynonyms": true,
+      "role": "OBJECT",
+      "expectedType": "TEXT",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": false
+    },
+    {
+      "fieldName": "descuentos aplicados",
+      "keywords": ["descuento", "rebaja", "dto", "reducción", "menos", "porcentaje de descuento"],
+      "useSynonyms": true,
+      "role": "AMOUNT",
+      "expectedType": "MONEY",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": true
+    },
+    {
+      "fieldName": "asunto (notificación)",
+      "keywords": ["asunto", "tema", "motivo", "subject", "encabezado", "referencia"],
+      "useSynonyms": true,
+      "role": "NONE",
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "notificacion",
+      "multiple": false
+    },
+    {
+      "fieldName": "remitente",
+      "keywords": ["remitente", "de", "sender", "origen", "emisor", "quien envía"],
+      "useSynonyms": true,
+      "role": "SUBJECT",
+      "expectedType": "TEXT",
+      "required": true,
+      "contextTrigger": "notificacion",
+      "multiple": false
+    },
+    {
+      "fieldName": "destinatario",
+      "keywords": ["destinatario", "para", "recipient", "a quien va dirigido", "receptor", "attn"],
+      "useSynonyms": true,
+      "role": "OBJECT",
+      "expectedType": "TEXT",
+      "required": true,
+      "contextTrigger": "notificacion",
+      "multiple": false
+    },
+    {
+      "fieldName": "fecha de envío",
+      "keywords": ["fecha de envío", "fecha de notificación", "enviado el", "sent date", "fecha"],
+      "useSynonyms": true,
+      "role": "TIME",
+      "expectedType": "DATE",
+      "required": false,
+      "contextTrigger": "notificacion",
+      "multiple": false
+    },
+    {
+      "fieldName": "cuerpo del mensaje",
+      "keywords": ["mensaje", "contenido", "cuerpo", "texto", "body", "descripción larga"],
+      "useSynonyms": true,
+      "role": "NONE",
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "notificacion",
+      "multiple": true
+    }
+  ]
+}

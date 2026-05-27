@@ -1,0 +1,114 @@
+{
+  "specifications": [
+    {
+      "fieldName": "Fecha de vencimiento",
+      "keywords": ["fecha", "vencimiento", "vence", "caduca", "expira"],
+      "expectedType": "DATE",
+      "required": true,
+      "contextTrigger": "vencimiento",
+      "multiple": false,
+      "role": "TIME",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "número de factura",
+      "keywords": ["factura", "número", "num", "nro", "identificador"],
+      "expectedType": "TEXT",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": false,
+      "role": "OBJECT",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "monto total",
+      "keywords": ["total", "monto", "suma", "importe", "precio final"],
+      "expectedType": "MONEY",
+      "required": true,
+      "contextTrigger": "",
+      "multiple": false,
+      "role": "AMOUNT",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "productos",
+      "keywords": ["producto", "artículo", "ítem", "descripción"],
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": true,
+      "role": "OBJECT",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "cantidades",
+      "keywords": ["cantidad", "unidades", "uds", "piezas"],
+      "expectedType": "NUMBER",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": true,
+      "role": "AMOUNT",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "precios unitarios",
+      "keywords": ["precio", "unitario", "c/u", "costo"],
+      "expectedType": "MONEY",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": true,
+      "role": "AMOUNT",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "correo electrónico",
+      "keywords": ["email", "correo", "electrónico", "mail"],
+      "expectedType": "EMAIL",
+      "required": false,
+      "contextTrigger": "contacto",
+      "multiple": false,
+      "role": "NONE",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "teléfono",
+      "keywords": ["teléfono", "tel", "móvil", "celular", "contacto"],
+      "expectedType": "PHONE",
+      "required": false,
+      "contextTrigger": "contacto",
+      "multiple": true,
+      "role": "NONE",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "fecha de emisión",
+      "keywords": ["emisión", "fecha de emisión", "fecha documento"],
+      "expectedType": "DATE",
+      "required": false,
+      "contextTrigger": "emisión",
+      "multiple": false,
+      "role": "TIME",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "proveedor",
+      "keywords": ["proveedor", "vendedor", "empresa", "comercial", "razón social"],
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": false,
+      "role": "SUBJECT",
+      "useSynonyms": true
+    },
+    {
+      "fieldName": "cliente",
+      "keywords": ["cliente", "comprador", "adquiriente", "nombre y apellido"],
+      "expectedType": "TEXT",
+      "required": false,
+      "contextTrigger": "",
+      "multiple": false,
+      "role": "OBJECT",
+      "useSynonyms": true
+    }
+  ]
+}

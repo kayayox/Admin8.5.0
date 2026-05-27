@@ -1,0 +1,11 @@
+Factura Nº 001-2024
+Fecha de vencimiento: 15/04/2026
+Monto total: $1,250.00
+Productos:
+- Laptop (cantidad: 2, precio unitario: $500.00)
+- Mouse (cantidad: 1, precio unitario: $25.00)
+Teléfono de contacto: +34 912345678
+Correo electrónico: ventas@ejemplo.com
+Dirección: Calle Mayor 123, Madrid
+Fechas de pago: 10/04/2026 y 20/04/2026
+Descuentos aplicados: $50.00

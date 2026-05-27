@@ -1,0 +1,32 @@
+INVOICE / FACTURA
+
+Invoice number: INV-2026-089
+Issue date: 2026-05-18
+Due date: 2026-06-17
+
+From:
+AI Advisors S.A.
+NIF: A12398765
+Paseo de la Castellana, 200, 28046 Madrid
+Phone: +34 91 555 77 88
+Email: billing@aiadvisors.com
+
+To:
+NLP Tech Solutions S.L.
+CIF: B55544433
+Calle del Software, 10, 41004 Sevilla
+Email: accounts@nlptech.es
+
+Description                              Qty   Unit price (€)   Amount (€)
+Auditoría de modelos lingüísticos         1         950.00          950.00
+Diseño de prompts optimizados             3         275.00          825.00
+
+Subtotal: 1775.00 €
+IVA (21%): 372.75 €
+Total: 2147.75 €
+
+Payment method: Credit card / bank transfer
+IBAN: ES05 1234 5678 9123 4567 8901
+BIC: BBVAESMMXXX
+
+Due date: 2026-06-17. Late payment interest: 0.5% per month.

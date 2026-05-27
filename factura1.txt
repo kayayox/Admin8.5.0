@@ -1,0 +1,38 @@
+FACTURA COMPLETA
+
+Nº factura: 2026-5678
+Fecha de expedición: 20/05/2026
+Fecha de operación: 19/05/2026
+
+Vendedor:
+Distritech S.L.U.
+CIF: B66778899
+C/ Industria, 34, 28850 Torrejón de Ardoz, Madrid
+Email: ventas@distritech.com
+Teléfono: 916 44 33 22
+
+Comprador:
+Universidad de Lenguas Aplicadas
+NIF: Q2812345C
+C/ Estudios, s/n, 37008 Salamanca
+Email: compras@ula.es
+
+Línea   Producto                Cantidad   Precio unitario   Importe
+1       Auriculares NLP                    10           45.50 €    455.00 €
+2       Libro "Lingüística computacional"   5           38.20 €    191.00 €
+3       Licencia software anual             2          199.99 €    399.98 €
+
+Subtotal: 1045.98 €
+Gastos de envío: 15.00 €
+Base imponible: 1060.98 €
+IVA 21%: 222.81 €
+Retención IRPF 15%: -159.15 €
+Total a pagar: 1124.64 €
+
+Forma de pago: Tarjeta de crédito (últimos 4 dígitos 1234) o transferencia.
+IBAN: ES47 2100 7890 1234 5678 9012
+Banco: Banco de Pruebas S.A.
+
+Fecha límite de pago: 10/06/2026
+
+Observaciones: Para cualquier incidencia, contacte con facturas@distritech.com

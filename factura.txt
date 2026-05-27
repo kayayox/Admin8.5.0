@@ -1,0 +1,34 @@
+FACTURA SIMPLIFICADA
+
+Número de factura: F2026-00123
+Fecha de emisión: 22/05/2026
+Fecha de vencimiento: 05/06/2026
+
+Proveedor:
+Cloud Solutions S.L.
+CIF: B87654321
+C/ Mayor, 45, 28013 Madrid
+Tel: +34 912 345 678
+Email: facturacion@cloudsolutions.es
+
+Cliente:
+Distribuciones García S.A.
+NIF: A99887766
+Av. Diagonal 123, 08008 Barcelona
+Email: admin@distribucionesgarcia.com
+
+Concepto                     Cantidad   Precio unitario   Importe
+Mantenimiento servidores     3 meses         150.00 €      450.00 €
+Migración a la nube          1 servicio      800.00 €      800.00 €
+
+SUBTOTAL: 1250.00 €
+Descuento (5%): 62.50 €
+BASE IMPONIBLE: 1187.50 €
+IVA (21%): 249.38 €
+TOTAL: 1436.88 €
+
+Forma de pago: Transferencia bancaria
+IBAN: ES76 9876 5432 1011 1213 1415
+SWIFT: CAIXESBBXXX
+
+Nota: El pago se considerará efectuado cuando se reciba el importe total en la cuenta indicada.

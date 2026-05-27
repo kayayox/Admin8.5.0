@@ -1,0 +1,39 @@
+Asunto: Confirmación de tu pedido en TiendaOnline
+
+Hola María,
+
+Gracias por tu compra. Tu pedido #PED-2026-05-23 ha sido registrado.
+
+Detalles del envío:
+Dirección de entrega: Av. Libertador 2345, Piso 3, Oficina B, Ciudad Autónoma de Buenos Aires, Argentina.
+
+Productos solicitados:
+- Auriculares Bluetooth (cantidad: 2, precio unitario: $45.99)
+- Cargador inalámbrico (cantidad: 1, precio unitario: $29.50)
+- Funda para tablet (cantidad: 3, precio unitario: $12.30)
+
+Subtotal: $166.37
+Descuentos aplicados: $10.00 (código BIENVENIDA)
+Envío: $5.99
+Impuestos: $0.00
+Total a pagar: $162.36
+
+Fechas importantes:
+- Fecha de compra: 23/05/2026
+- Fecha estimada de entrega: 28/05/2026
+- Fecha límite para cambios: 30/05/2026
+
+Información de contacto:
+Teléfono de soporte: +54 11 2345-6789
+Email: atencion@tiendaonline.com
+Email alternativo: soporte@tiendaonline.com
+
+Método de pago: Tarjeta terminada en 1234
+Número de autorización: AUTH-98765
+
+¿Necesitas ayuda? Escríbenos a ayuda@tiendaonline.com o llama al 0800-123-4567.
+
+Gracias por confiar en nosotros.
+
+Saludos,
+El equipo de TiendaOnline

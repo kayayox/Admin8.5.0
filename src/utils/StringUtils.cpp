@@ -189,9 +189,63 @@ std::string toLowerUtf8(const std::string& s) {
 }
 
 const std::set<std::string> kAbbreviations = {
-    "dr", "dra", "sr", "sra", "srta", "srl", "d", "s", "v",
-    "ej", "p.ej", "etc", "fig", "pág", "vol", "cap", "ed",
-    "apdo", "c", "f", "j", "n", "p", "q", "rr", "ss", "vv"
+    // ========== TÍTULOS Y TRATAMIENTOS (español) ==========
+    "dr", "dra", "sr", "sra", "srta", "srl", "d", "dna", "da", "dña",
+    "don", "doña", "sta", "sto", "san", "santa", "santo",
+    "fray", "frai", "monseñor", "mons", "rvd", "rdo", "rda",
+    "excmo", "excma", "ilm", "ilma", "v", "vd", "vds", "uds", "ud",
+    "prof", "profra", "profesora", "lic", "licda", "lcd", "lcdg",
+    "arq", "arqo", "ing", "mtr", "mtra", "maestra", "maestro",
+    "cap", "capitán", "cnel", "coronel", "gral", "general",
+    "alm", "almirante", "ten", "teniente", "sarg", "sargento",
+    "pbro", "presbítero", "obispo", "arzobispo", "cardenal",
+
+    // ========== TRATAMIENTOS Y TÍTULOS (inglés) ==========
+    "mr", "mrs", "ms", "miss", "msr", "dr", "prof", "rev", "hon",
+    "capt", "cpt", "col", "gen", "lt", "sgt", "cpl", "adm", "gov",
+    "pres", "sen", "rep", "att", "atty", "esq", "jr", "sr", "phd",
+    "md", "rn", "cpa", "co", "inc", "llc", "ltd", "corp",
+
+    // ========== ABREVIATURAS LATINAS Y LOCUCIONES COMUNES ==========
+    "ej", "p.ej", "por ej", "v.gr", "v.g", "i.e", "e.g", "etc",
+    "et al", "ca", "circa", "aprox", "approx", "ibid", "op cit",
+    "loc cit", "cf", "c.f", "vide", "supra", "infra", "passim",
+    "sic", "q.e.d", "qed", "n.b", "nota bene", "p.s", "post scriptum",
+
+    // ========== ABREVIATURAS DE DIRECCIONES, EMPRESAS, DOCUMENTOS ==========
+    "av", "avda", "avenida", "c", "cl", "calle", "pl", "plza", "plaza",
+    "pje", "pasaje", "cjón", "callejón", "blvr", "bulevar", "autov",
+    "autopista", "km", "m", "cm", "mm", "hg", "kg", "g", "l", "ml",
+    "s.l", "s.a", "s.r.l", "cía", "cia", "comp", "co", "ltd", "inc",
+    "no", "núm", "num", "pág", "pag", "págs", "pags", "vol", "tomo",
+    "cap", "caps", "ed", "eds", "trad", "trads", "comp", "comps",
+    "coord", "coords", "dir", "dirs", "il", "ils", "fol", "fols",
+
+    // ========== ABREVIATURAS TEMPORALES, FECHAS, HORAS ==========
+    "a.c", "a.c.", "d.c", "d.c.", "aec", "ec", "ad", "a.d", "a.e.c",
+    "ante mer", "post mer", "a.m", "a.m.", "p.m", "p.m.", "bce", "ce",
+    "mes", "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago",
+    "sep", "sept", "oct", "nov", "dic", "lun", "mar", "mié", "jue",
+    "vie", "sáb", "dom", "sem", "año", "sig", "sigl", "ss", "vv",
+
+    // ========== ABREVIATURAS DE DIRECCIONES POSTALES / WEBS ==========
+    "apto", "apdo", "depto", "edif", "ed", "piso", "esc", "puerta",
+    "esq", "entlo", "principal", "pb", "bajos", "ático", "manz",
+    "lote", "mzna", "parc", "pol", "urb", "urbanización", "rúa",
+    "planta", "local", "oficina", "nave", "almacén", "depósito",
+
+    // ========== ABREVIATURAS ACADÉMICAS Y CIENTÍFICAS ==========
+    "fig", "figs", "tab", "tabs", "ec", "ecs", "eq", "eqs",
+    "var", "vars", "ap", "aps", "anex", "ane", "apéndice",
+    "ilustr", "gráf", "gráfico", "diag", "esq", "cuadro",
+    "sec", "secs", "subsec", "cap", "caps", "ref", "refs",
+    "bibliog", "bibl", "fuente", "fuentes", "nota", "notas",
+
+    // ========== OTROS COMUNES ==========
+    "c", "f", "j", "n", "p", "q", "rr", "ss", "vv", "w", "x", "y", "z",
+    "tel", "telf", "fax", "móv", "cel", "email", "correo", "web", "url",
+    "id", "ids", "nº", "número", "ref", "refs", "párr", "párrafo",
+    "vf", "vta", "vuelta", "recto", "anv", "anverso", "rev", "reverso"
 };
 
 /**

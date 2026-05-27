@@ -36,4 +36,15 @@ std::string quantityToString(Quantity quantity);
 /** @brief Converts PatternType to its English name (e.g. SIMPLE_AFFIRMATIVE -> "Simple Affirmative"). */
 std::string patternTypeToString(PatternType type);
 
+/** @brief Converts TokenType to its English name (e.g. WORD -> "Word"). */
+std::string tokenTypeToString(TokenType type);
+
+/** @brief Converts CommandType to its English name (e.g. DO -> "Do"). */
+std::string commandTypeToString(CommandType type);
+
+/** @brief Converts State to its English name (e.g. START -> "Start"). */
+std::string stateToString(State state);
+
+WordType stringToWordType(const std::string word);
+
 #endif // ADMIN850_STRING_CONVERSIONS_HPP

@@ -247,15 +247,27 @@ namespace TagStats {
         unigram(WordType::NOUN,            WordType::ADJECTIVE,     70);
         unigram(WordType::VERB,            WordType::ADVERB,        40);
         unigram(WordType::VERB,            WordType::PRONOUN,       70);
+        unigram(WordType::VERB,            WordType::NEGATION,     15);
         unigram(WordType::ADVERB,          WordType::ADJECTIVE,     65);
         unigram(WordType::ADVERB,          WordType::VERB,          75);
+        unigram(WordType::ADVERB,          WordType::NEGATION,     10);
         unigram(WordType::PRONOUN,         WordType::VERB,          80);
         unigram(WordType::CONJUNCTION,     WordType::PRONOUN,       90);
+        unigram(WordType::CONJUNCTION,     WordType::NEGATION,     25);
+        unigram(WordType::CONJUNCTION,     WordType::AFIRMATION,   20);
         unigram(WordType::NUMERAL,         WordType::NOUN,          85);
         unigram(WordType::NUMERAL,         WordType::ADJECTIVE,     70);
         unigram(WordType::ADJECTIVE,       WordType::NOUN,          60);
         unigram(WordType::RELATIVE,        WordType::VERB,          50);
         unigram(WordType::DEMONSTRATIVE,   WordType::NOUN,          80);
+        unigram(WordType::NEGATION,        WordType::VERB,         90);
+        unigram(WordType::NEGATION,        WordType::ADJECTIVE,    25);
+        unigram(WordType::NEGATION,        WordType::ADVERB,       20);
+        unigram(WordType::NEGATION,        WordType::PRONOUN,       5);
+        unigram(WordType::AFIRMATION,      WordType::VERB,         80);
+        unigram(WordType::AFIRMATION,      WordType::ADJECTIVE,    30);
+        unigram(WordType::AFIRMATION,      WordType::ADVERB,       40);
+        unigram(WordType::AFIRMATION,      WordType::NOUN,         10);
 
         // Bigrams
         auto bigram = [](WordType prev2, WordType prev, WordType curr, int c) {
@@ -270,11 +282,18 @@ namespace TagStats {
         bigram(WordType::VERB,       WordType::PRONOUN,WordType::VERB,      70);
         bigram(WordType::NOUN,       WordType::VERB,   WordType::ADVERB,    50);
         bigram(WordType::NOUN,       WordType::ADJECTIVE, WordType::VERB,   60);
+        bigram(WordType::NOUN,         WordType::NEGATION,      WordType::VERB,      60);
+        bigram(WordType::VERB,         WordType::NEGATION,      WordType::VERB,      20);
+        bigram(WordType::VERB,         WordType::AFIRMATION,    WordType::VERB,      30);
+        bigram(WordType::CONJUNCTION,  WordType::NEGATION,      WordType::ADJECTIVE, 40);
         bigram(WordType::ADVERB,     WordType::VERB,   WordType::ADJECTIVE, 65);
         bigram(WordType::PRONOUN,    WordType::VERB,   WordType::ADVERB,    50);
         bigram(WordType::CONJUNCTION, WordType::PRONOUN, WordType::VERB,    80);
         bigram(WordType::NUMERAL,    WordType::NOUN,   WordType::ADJECTIVE, 65);
         bigram(WordType::INTERROGATIVE, WordType::VERB, WordType::ADVERB,   60);
+        bigram(WordType::UNDEFINED,    WordType::NEGATION,      WordType::VERB,      85);
+        bigram(WordType::UNDEFINED,    WordType::AFIRMATION,    WordType::VERB,      75);
+        bigram(WordType::PRONOUN,      WordType::NEGATION,      WordType::VERB,      70);
 
         // Trigrams
         auto trigram = [](WordType prev, WordType curr, WordType next, int c) {
@@ -381,6 +400,16 @@ namespace TagStats {
         trigram(WordType::INTERROGATIVE, WordType::VERB,WordType::ADVERB,    60);
         trigram(WordType::INTERROGATIVE, WordType::VERB,WordType::NOUN,      30);
         trigram(WordType::INTERROGATIVE, WordType::VERB,WordType::ADJECTIVE, 10);
+        trigram(WordType::UNDEFINED,       WordType::NEGATION,      WordType::VERB,      85);
+        trigram(WordType::UNDEFINED,       WordType::AFIRMATION,    WordType::VERB,      75);
+        trigram(WordType::PRONOUN,     WordType::NEGATION,      WordType::VERB,      70);
+        trigram(WordType::NOUN,        WordType::NEGATION,      WordType::VERB,      60);
+        trigram(WordType::NEGATION,    WordType::VERB,          WordType::ADVERB,    30);
+        trigram(WordType::NEGATION,    WordType::VERB,          WordType::NOUN,      25);
+        trigram(WordType::NEGATION,    WordType::VERB,          WordType::PRONOUN,   10);
+        trigram(WordType::AFIRMATION,  WordType::VERB,          WordType::ADVERB,    40);
+        trigram(WordType::AFIRMATION,  WordType::VERB,          WordType::NOUN,      20);
+        trigram(WordType::NEGATION,    WordType::ADJECTIVE,     WordType::CONJUNCTION, 15);
     }
 
     // ------------------------------------------------------------------------
@@ -423,7 +452,17 @@ namespace TagStats {
         unigram(WordType::DEMONSTRATIVE,  WordType::ADJECTIVE,    15);
         unigram(WordType::INTERROGATIVE,  WordType::VERB,         60);
         unigram(WordType::INTERROGATIVE,  WordType::NOUN,         25);
-
+        unigram(WordType::NEGATION,    WordType::VERB,         85);
+        unigram(WordType::NEGATION,    WordType::ADJECTIVE,    30);
+        unigram(WordType::NEGATION,    WordType::ADVERB,       25);
+        unigram(WordType::AFIRMATION,  WordType::VERB,         75);
+        unigram(WordType::AFIRMATION,  WordType::ADJECTIVE,    20);
+        unigram(WordType::AFIRMATION,  WordType::ADVERB,       35);
+        unigram(WordType::AFIRMATION,  WordType::NOUN,          8);
+        unigram(WordType::VERB,        WordType::NEGATION,     12);
+        unigram(WordType::ADVERB,      WordType::NEGATION,      8);
+        unigram(WordType::CONJUNCTION, WordType::NEGATION,     20);
+        unigram(WordType::CONJUNCTION, WordType::AFIRMATION,   15);
         // Bigrams (prev2, prev, curr)
         auto bigram = [](WordType prev2, WordType prev, WordType curr, int c) {
             updateBigram(prev2, prev, curr, c);
@@ -456,6 +495,14 @@ namespace TagStats {
         bigram(WordType::DEMONSTRATIVE, WordType::NOUN, WordType::VERB,     50);
         bigram(WordType::INTERROGATIVE, WordType::VERB, WordType::PRONOUN,  35);
         bigram(WordType::NUMERAL, WordType::ADJECTIVE, WordType::NOUN,      40);
+        bigram(WordType::UNDEFINED,        WordType::NEGATION,      WordType::VERB,      80);
+        bigram(WordType::UNDEFINED,        WordType::AFIRMATION,    WordType::VERB,      70);
+        bigram(WordType::PRONOUN,      WordType::NEGATION,      WordType::VERB,      75);
+        bigram(WordType::NOUN,         WordType::NEGATION,      WordType::VERB,      55);
+        bigram(WordType::VERB,         WordType::NEGATION,      WordType::VERB,      15);
+        bigram(WordType::VERB,         WordType::AFIRMATION,    WordType::VERB,      25);
+        bigram(WordType::CONJUNCTION,  WordType::NEGATION,      WordType::ADJECTIVE, 35);
+
         // Trigrams (prev, curr, next)
         auto trigram = [](WordType prev, WordType curr, WordType next, int c) {
             updateTrigram(prev, curr, next, c);
@@ -503,6 +550,16 @@ namespace TagStats {
         trigram(WordType::INTERROGATIVE, WordType::VERB, WordType::PRONOUN,  40);
         trigram(WordType::INTERROGATIVE, WordType::VERB, WordType::NOUN,     30);
         trigram(WordType::INTERROGATIVE, WordType::VERB, WordType::ADVERB,   20);
+        trigram(WordType::UNDEFINED,       WordType::NEGATION,      WordType::VERB,      80);
+        trigram(WordType::UNDEFINED,       WordType::AFIRMATION,    WordType::VERB,      70);
+        trigram(WordType::PRONOUN,     WordType::NEGATION,      WordType::VERB,      75);
+        trigram(WordType::NOUN,        WordType::NEGATION,      WordType::VERB,      55);
+        trigram(WordType::NEGATION,    WordType::VERB,          WordType::ADVERB,    40);
+        trigram(WordType::NEGATION,    WordType::VERB,          WordType::NOUN,      30);
+        trigram(WordType::NEGATION,    WordType::VERB,          WordType::PRONOUN,   15);
+        trigram(WordType::AFIRMATION,  WordType::VERB,          WordType::ADVERB,    45);
+        trigram(WordType::AFIRMATION,  WordType::VERB,          WordType::NOUN,      25);
+        trigram(WordType::NEGATION,    WordType::ADJECTIVE,     WordType::CONJUNCTION, 20);
     }
 
     void loadDefaultFromStatic() {

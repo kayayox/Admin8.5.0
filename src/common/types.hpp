@@ -35,6 +35,8 @@ enum class WordType : uint8_t {
     EMAIL,
     MONEY,
     PHONE,
+    NEGATION,
+    AFIRMATION,
     UNDEFINED       ///< Unspecified or unknown type
 };
 
@@ -94,7 +96,8 @@ enum class PatternType : uint8_t {
     SIMPLE_INTERROGATIVE,
     COMPOUND_INTERROGATIVE,
     MIXED,
-    SENTENCES
+    SENTENCES,
+    IMPERATIVE
 };
 
 /** @brief Token type produced by the lexical analyzer. */
@@ -127,3 +130,5 @@ enum class State {
     PREPOSITIONAL,
     CONJUNCTION
 };
+
+enum class SemanticRole { SUBJECT, OBJECT, VERB, TIME, AMOUNT, NONE };

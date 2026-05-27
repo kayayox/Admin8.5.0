@@ -6,6 +6,7 @@
  */
 
 #include "StringConversions.hpp"
+#include <vector>
 
 std::string wordTypeToString(WordType type) {
     static const char* names[] = {
@@ -25,9 +26,11 @@ std::string wordTypeToString(WordType type) {
         "Quantifier",       // QUANTIFIER
         "Demonstrative",    // DEMONSTRATIVE
         "Date",             // DATE
-        "Email",
-        "Money",
-        "Phone",
+        "Email",            // EMAIL
+        "Money",            // MONEY
+        "Phone",            // PHONE
+        "Negation",
+        "Afirmation",
         "Undefined"         // UNDEFINED
     };
     int idx = static_cast<int>(type);
@@ -107,9 +110,82 @@ std::string patternTypeToString(PatternType type) {
         "Simple Interrogative",     // SIMPLE_INTERROGATIVE
         "Compound Interrogative",   // COMPOUND_INTERROGATIVE
         "Mixed",                    // MIXED
-        "Sentences"                 // SENTENCES
+        "Sentences",                 // SENTENCES
+        "Imperative"
     };
     int idx = static_cast<int>(type);
     if (idx < 0 || idx > 7) return "Unknown";
     return names[idx];
+}
+
+std::string tokenTypeToString(TokenType type) {
+    static const char* names[] = {
+        "Word",     // WORD
+        "Number",   // NUMBER
+        "Date",     // DATE
+        "Email",    // EMAIL
+        "Money",    // MONEY
+        "Phone"     // PHONE
+    };
+    int idx = static_cast<int>(type);
+    if (idx < 0 || idx >= static_cast<int>(sizeof(names)/sizeof(names[0]))) return "Unknown";
+    return names[idx];
+}
+
+std::string commandTypeToString(CommandType type) {
+    static const char* names[] = {
+        "Do", "Answer", "Ask", "Task", "Bid", "Go", "Report", "Move", "Repeat", "Find",
+        "Create", "Delete", "Update", "Send", "Call", "Play", "Pause", "Stop", "Start",
+        "Schedule", "Set", "Show", "Help", "Open", "Close", "Learn",
+        "Extract", "Retrieve", "Query", "Fetch"
+    };
+    int idx = static_cast<int>(type);
+    if (idx < 0 || idx >= static_cast<int>(sizeof(names)/sizeof(names[0]))) return "Unknown";
+    return names[idx];
+}
+
+std::string stateToString(State state) {
+    static const char* names[] = {
+        "Start",          // START
+        "Nominal",        // NOMINAL
+        "Verbal",         // VERBAL
+        "Prepositional",  // PREPOSITIONAL
+        "Conjunction"     // CONJUNCTION
+    };
+    int idx = static_cast<int>(state);
+    if (idx < 0 || idx >= static_cast<int>(sizeof(names)/sizeof(names[0]))) return "Unknown";
+    return names[idx];
+}
+
+WordType stringToWordType(const std::string word){
+    std::vector<std::string> names = {
+        "Pronoun",          // PRONOUN
+        "Article",          // ARTICLE
+        "Adjective",        // ADJECTIVE
+        "Noun",             // NOUN
+        "Verb",             // VERB
+        "Interrogative",    // INTERROGATIVE
+        "Adverb",           // ADVERB
+        "Sensory",          // SENSORY
+        "Preposition",      // PREPOSITION
+        "Relative",         // RELATIVE
+        "Numeral",          // NUMERAL
+        "Conjunction",      // CONJUNCTION
+        "Content",          // CONTENT
+        "Quantifier",       // QUANTIFIER
+        "Demonstrative",    // DEMONSTRATIVE
+        "Date",             // DATE
+        "Email",            // EMAIL
+        "Money",            // MONEY
+        "Phone",            // PHONE
+        "Negation",
+        "Afirmation",
+        "Undefined"         // UNDEFINED
+    };
+    for (size_t i = 0; i < names.size(); ++i) {
+        if (names[i] == word) {
+            return static_cast<WordType>(i);
+        }
+    }
+    return WordType::UNDEFINED;
 }
